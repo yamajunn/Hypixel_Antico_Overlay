@@ -6,7 +6,7 @@ def judgment_cheater(data, model, scaler):
     scaled = scaler.transform(scaled)
 
     y_pred = model.predict_proba(scaled)
-    print(y_pred)
+    # print(y_pred)
     return y_pred[0][0]
 
 # import joblib

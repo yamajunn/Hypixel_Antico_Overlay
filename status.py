@@ -1,6 +1,7 @@
 import time
 import requests
 import pprint
+import json
 
 dic_labels = [
     # 'karma',
@@ -63,7 +64,7 @@ def get_shop(data_dic):
     if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and "stats" in data_dic["player"] and "Bedwars" in data_dic["player"]["stats"] and "favourites_2" in data_dic["player"]["stats"]["Bedwars"]:
         return len(set(data_dic["player"]["stats"]["Bedwars"]["favourites_2"].split(",")) & set(["golden_apple", "fireball", "diamond_boots"]))
 def get_language(data_dic):
-    if "userLanguage" in data_dic["player"]:
+    if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and "userLanguage" in data_dic["player"]:
         return data_dic["player"]["userLanguage"]
 def get_status(uuid, API_KEY):
     uuid_link = f"https://api.hypixel.net/player?key={API_KEY}&uuid={uuid}"
@@ -103,6 +104,8 @@ def get_status(uuid, API_KEY):
             for j in [datas[10] / datas[9], datas[16] / datas[14], datas[3] / datas[4], datas[10] / datas[1], datas[13] / datas[1], datas[3] / datas[1]]:
                 datas.append(j)
         return [datas, get_shop(data_dic), get_language(data_dic)]
+    else:
+        return [None, None, None]
     
 def games(uuid, API_KEY):
     games_link = f"https://api.hypixel.net/v2/recentgames?key={API_KEY}&uuid={uuid}"
@@ -161,9 +164,9 @@ def status(name, API_KEY):
     info = getinfo(name_link)
     if info != None and "id" in info:
         uuid = info["id"]
-        return [get_status(uuid, API_KEY)[0], pols(uuid), games(uuid, API_KEY), get_status(uuid, API_KEY)[1], get_status(uuid, API_KEY)[2]]
+        return [get_status(uuid, API_KEY)[0], pols(uuid), games(uuid, API_KEY), get_status(uuid, API_KEY)[1], get_status(uuid, API_KEY)[2], uuid]
     else:
-        return [None, None, None, None, None]
+        return [None, None, None, None, None, None]
 
 # API_KEY = "456aa888-2e2c-4f8c-86a5-6994ab5b5941"
 # name = "Gokiton"

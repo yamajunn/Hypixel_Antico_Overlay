@@ -4,11 +4,14 @@ from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtGui import QColor, QIcon, QPixmap
 import joblib
 import concurrent.futures
+import json
 
 from who import checker
 
 # path = r"/Users/chinq500/Library/Application Support/minecraft/versions/1.8.9/logs/latest.log"
 path = r"C:/Users/Owner/AppData/Roaming/.minecraft/logs/blclient/minecraft/latest.log"
+with open('met_player.json', 'wt') as f:
+    json.dump({}, f, indent=4)
 
 def who(s):
     l = s.split("\n")
@@ -58,21 +61,22 @@ with open(path) as f:
                 "    color: white;"
                 "}"
             )
-            self.table_widget.setColumnCount(8)  # 7つのカラムを持つ
-            self.table_widget.setHorizontalHeaderLabels(["MCID", "CHEAT", "PING", "LG", "1", "2", "3", "SHOP"])  # カラムのヘッダー
+            self.table_widget.setColumnCount(9)  # 7つのカラムを持つ
+            self.table_widget.setHorizontalHeaderLabels(["MCID", "CHEAT", "PING", "LG", "1", "2", "3", "SHOP", "MET"])  # カラムのヘッダー
             list_num = 16
             self.table_widget.setRowCount(list_num)  # 16行に変更
             self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)
             total_width = 400
-            self.table_widget.setColumnWidth(0, 110)
-            self.table_widget.setColumnWidth(1, 50)
-            self.table_widget.setColumnWidth(2, 40)
+            self.table_widget.setColumnWidth(0, 100)
+            self.table_widget.setColumnWidth(1, 30)
+            self.table_widget.setColumnWidth(2, 20)
             self.table_widget.setColumnWidth(3, 50)
-            self.table_widget.setColumnWidth(4, 25)
-            self.table_widget.setColumnWidth(5, 25)
-            self.table_widget.setColumnWidth(6, 25)
-            self.table_widget.setColumnWidth(7, 25)
-            self.table_widget.setColumnWidth(8, 25)
+            self.table_widget.setColumnWidth(4, 20)
+            self.table_widget.setColumnWidth(5, 20)
+            self.table_widget.setColumnWidth(6, 20)
+            self.table_widget.setColumnWidth(7, 20)
+            self.table_widget.setColumnWidth(8, 20)
+            self.table_widget.setColumnWidth(9, 20)
 
             # 以下、追加した行のデータを設定
             for i in range(list_num):
@@ -85,21 +89,24 @@ with open(path) as f:
                 ping = QTableWidgetItem("K")
                 ping.setFlags(ping.flags() & ~Qt.ItemIsEditable)
                 self.table_widget.setItem(i, 2, ping)
-                mode = QTableWidgetItem("I")
-                mode.setFlags(mode.flags() & ~Qt.ItemIsEditable)
-                self.table_widget.setItem(i, 3, mode)
-                mode = QTableWidgetItem("B")
-                mode.setFlags(mode.flags() & ~Qt.ItemIsEditable)
-                self.table_widget.setItem(i, 4, mode)
-                mode = QTableWidgetItem("U")
-                mode.setFlags(mode.flags() & ~Qt.ItemIsEditable)
-                self.table_widget.setItem(i, 5, mode)
-                mode = QTableWidgetItem("R")
-                mode.setFlags(mode.flags() & ~Qt.ItemIsEditable)
-                self.table_widget.setItem(i, 6, mode)
-                mode = QTableWidgetItem("I")
-                mode.setFlags(mode.flags() & ~Qt.ItemIsEditable)
-                self.table_widget.setItem(i, 6, mode)
+                languege = QTableWidgetItem("I")
+                languege.setFlags(languege.flags() & ~Qt.ItemIsEditable)
+                self.table_widget.setItem(i, 3, languege)
+                mode0 = QTableWidgetItem("B")
+                mode0.setFlags(mode0.flags() & ~Qt.ItemIsEditable)
+                self.table_widget.setItem(i, 4, mode0)
+                mode1 = QTableWidgetItem("U")
+                mode1.setFlags(mode1.flags() & ~Qt.ItemIsEditable)
+                self.table_widget.setItem(i, 5, mode1)
+                mode2 = QTableWidgetItem("R")
+                mode2.setFlags(mode2.flags() & ~Qt.ItemIsEditable)
+                self.table_widget.setItem(i, 6, mode2)
+                shop = QTableWidgetItem("I")
+                shop.setFlags(shop.flags() & ~Qt.ItemIsEditable)
+                self.table_widget.setItem(i, 7, shop)
+                met = QTableWidgetItem("G")
+                met.setFlags(met.flags() & ~Qt.ItemIsEditable)
+                self.table_widget.setItem(i, 8, met)
 
                 self.table_widget.setRowHeight(i, 20)
                 
@@ -156,6 +163,18 @@ with open(path) as f:
                     return_values = list(executor.map(lambda mcid: checker(mcid, model, scaler), players))
                 for num, updated_values in enumerate(return_values):
                     print(updated_values)
+                    met_num = 0
+                    with open('met_player.json') as r:
+                        di = json.load(r)
+                        if updated_values[6] != None:
+                            if updated_values[6] in di:
+                                met_num = di[updated_values[6]]
+                                di[updated_values[6]] += 1
+                            else:
+                                di[updated_values[6]] = 1
+                            with open('met_player.json', 'w') as w:
+                                json.dump(di, w, indent=4)
+                    # print(updated_values)
                     pixmap0 = QPixmap(f"images/{mode_list[9]}")
                     pixmap1 = QPixmap(f"images/{mode_list[9]}")
                     pixmap2 = QPixmap(f"images/{mode_list[9]}")
@@ -235,13 +254,21 @@ with open(path) as f:
                         label7.setPixmap(pixmap2)
                         self.table_widget.setCellWidget(num, 6, label7)
 
-                        item7 = QTableWidgetItem(str(updated_values[4]))
-                        item7.setForeground(color)
-                        font = item7.font()  # フォントを取得
+                        item8 = QTableWidgetItem(str(updated_values[4]))
+                        item8.setForeground(color)
+                        font = item8.font()  # フォントを取得
                         font.setBold(True)  # フォントを太くする
                         font.setPointSize(7)
-                        item7.setFont(font)  # 変更したフォントをセット
-                        self.table_widget.setItem(num, 7, item7)
+                        item8.setFont(font)  # 変更したフォントをセット
+                        self.table_widget.setItem(num, 7, item8)
+
+                        item9 = QTableWidgetItem(str(met_num))
+                        item9.setForeground(color)
+                        font = item9.font()  # フォントを取得
+                        font.setBold(True)  # フォントを太くする
+                        font.setPointSize(7)
+                        item9.setFont(font)  # 変更したフォントをセット
+                        self.table_widget.setItem(num, 8, item9)
                     else:
                         item = QTableWidgetItem(str(players[num]))
                         item.setForeground(QColor(255, 0, 0))
@@ -290,6 +317,13 @@ with open(path) as f:
                         font.setPointSize(7)
                         item8.setFont(font)  # 変更したフォントをセット
                         self.table_widget.setItem(num, 7, item8)
+                        item9 = QTableWidgetItem(str(met_num))
+                        item9.setForeground(color)
+                        font = item9.font()  # フォントを取得
+                        font.setBold(True)  # フォントを太くする
+                        font.setPointSize(7)
+                        item9.setFont(font)  # 変更したフォントをセット
+                        self.table_widget.setItem(num, 8, item9)
                     QApplication.processEvents()
                     num += 1
 
