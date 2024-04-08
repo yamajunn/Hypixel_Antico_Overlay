@@ -59,6 +59,12 @@ def getinfo(call):
         print(f"An error occurred: {e}")
         return None
 
+def get_shop(data_dic):
+    if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and "stats" in data_dic["player"] and "Bedwars" in data_dic["player"]["stats"] and "favourites_2" in data_dic["player"]["stats"]["Bedwars"]:
+        return len(set(data_dic["player"]["stats"]["Bedwars"]["favourites_2"].split(",")) & set(["golden_apple", "fireball", "diamond_boots"]))
+def get_language(data_dic):
+    if "userLanguage" in data_dic["player"]:
+        return data_dic["player"]["userLanguage"]
 def get_status(uuid, API_KEY):
     uuid_link = f"https://api.hypixel.net/player?key={API_KEY}&uuid={uuid}"
     data_dic = getinfo(uuid_link)
@@ -67,7 +73,7 @@ def get_status(uuid, API_KEY):
     if data_dic != None:
         if "cause" in data_dic and data_dic["cause"] == "Key throttle":
             time.sleep(300)
-        if "player" in data_dic and data_dic["player"] is not None:
+        if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None:
             for dic_label in dic_labels:
                 if dic_label in data_dic["player"]:
                     datas.append(data_dic["player"][dic_label])
@@ -96,9 +102,45 @@ def get_status(uuid, API_KEY):
             # for j in [datas[28] / datas[27], datas[37] / datas[32], datas[17] / datas[18], datas[28] / datas[6], datas[31] / datas[6], datas[17] / datas[6]]:
             for j in [datas[10] / datas[9], datas[16] / datas[14], datas[3] / datas[4], datas[10] / datas[1], datas[13] / datas[1], datas[3] / datas[1]]:
                 datas.append(j)
-        else:
-            print(data_dic)
-        return datas
+        return [datas, get_shop(data_dic), get_language(data_dic)]
+    
+def games(uuid, API_KEY):
+    games_link = f"https://api.hypixel.net/v2/recentgames?key={API_KEY}&uuid={uuid}"
+    data_dic = getinfo(games_link)
+    modes = []
+    game_nums = []
+    if data_dic != None and "games" in data_dic:
+        if len(data_dic["games"]) == 3:
+            modes.append(data_dic["games"][0]["gameType"])
+            modes.append(data_dic["games"][1]["gameType"])
+            modes.append(data_dic["games"][2]["gameType"])
+        if len(data_dic["games"]) == 2:
+            modes.append(data_dic["games"][0]["gameType"])
+            modes.append(data_dic["games"][1]["gameType"])
+        if len(data_dic["games"]) == 1:
+            modes.append(data_dic["games"][0]["gameType"])
+        for mode in modes:
+            if mode == "BEDWARS":
+                game_nums.append(0)
+            elif mode == "SKYWARS":
+                game_nums.append(1)
+            elif mode == "TNTGAMES":
+                game_nums.append(2)
+            elif mode == "UHC":
+                game_nums.append(3)
+            elif mode == "MURDER_MYSTERY":
+                game_nums.append(4)
+            elif mode == "BUILD_BATTLE":
+                game_nums.append(5)
+            elif mode == "DUELS":
+                game_nums.append(6)
+            elif mode == "SKYBLOCK":
+                game_nums.append(7)
+            elif mode == "PIT":
+                game_nums.append(8)
+            else:
+                game_nums.append(9)
+    return game_nums
 
 def pols(uuid):
     url = "https://api.polsu.xyz/polsu/ping"
@@ -119,11 +161,11 @@ def status(name, API_KEY):
     info = getinfo(name_link)
     if info != None and "id" in info:
         uuid = info["id"]
-        return [get_status(uuid, API_KEY), pols(uuid)]
+        return [get_status(uuid, API_KEY)[0], pols(uuid), games(uuid, API_KEY), get_status(uuid, API_KEY)[1], get_status(uuid, API_KEY)[2]]
     else:
-        return [None, None]
+        return [None, None, None, None, None]
 
-# API_KEY = "f7c3c976-ee3d-4a05-a996-84fe2944bebd"
+# API_KEY = "456aa888-2e2c-4f8c-86a5-6994ab5b5941"
 # name = "Gokiton"
 # print(status(name, API_KEY))
 
