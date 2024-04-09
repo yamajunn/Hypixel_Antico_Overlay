@@ -73,7 +73,7 @@ def get_status(uuid, API_KEY):
     datas = []
     if data_dic != None:
         if "cause" in data_dic and data_dic["cause"] == "Key throttle":
-            time.sleep(300)
+            time.sleep(5)
         if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None:
             for dic_label in dic_labels:
                 if dic_label in data_dic["player"]:
