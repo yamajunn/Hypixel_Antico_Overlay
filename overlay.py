@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView, QLabel
-from PyQt5.QtCore import Qt, QPoint, QTimer, QEvent
+from PyQt5.QtCore import Qt, QPoint, QTimer, QEvent, QSize
 from PyQt5.QtGui import QColor, QIcon, QPixmap
 import joblib
 import concurrent.futures
@@ -71,11 +71,13 @@ with open(path) as f:
             super().__init__()
             self.initUI()
             self.installEventFilter(self)
-            keyboard.add_hotkey('f5', lambda: self.ShowOrHide())
-            self.f5_disabled = False
+            with open('key.json') as k:
+                key = json.load(k)
+            keyboard.add_hotkey(key, lambda: self.ShowOrHide())
+            self.fdisabled = False
 
         def ShowOrHide(self):
-            if not self.f5_disabled:
+            if not self.fdisabled:
                 if self.isHidden():
                     print("show")
                     self.show()
@@ -90,7 +92,7 @@ with open(path) as f:
             self.setAttribute(Qt.WA_TranslucentBackground)  # 背景を透明にする
             self.setWindowIcon(QIcon('logo.ico'))  # アイコンを設定
             self.oldPos = self.pos()  # ウィンドウの初期位置
-            self.f5_pressed = False  # f5_pressed属性を追加
+            self.pressed = False  # f5_pressed属性を追加
             self.setFocus()
             
             # テーブルウィジェットを作成して内容を追加
@@ -169,12 +171,66 @@ with open(path) as f:
             label.setFont(font)  # 変更したフォントをセット
             label.setGeometry(45, 0, 360, 30)  # ラベルのサイズと位置を設定
 
+            self.settings_button = QPushButton(self)
+            self.settings_button.setIcon(QIcon("gear.png"))
+            self.settings_button.setIconSize(QSize(25, 25))
+            self.settings_button.setGeometry(330, 5, 20, 20)
+            self.settings_button.clicked.connect(self.open_settings)
+
             # レイアウトを設定
             layout = QVBoxLayout(self)
             # layout.addWidget(frame)
             layout.setContentsMargins(0, 0, 0, 0)
             self.setLayout(layout)
 
+        def open_settings(self):
+            self.settings_window = QWidget()
+            self.settings_window.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 枠を消して最前面に表示する
+            self.settings_window.setGeometry(400, 0, 200, 200)  # ウィンドウサイズ
+            self.settings_window.setStyleSheet("background-color: rgba(0, 0, 0, 0.1);")
+            self.settings_window.setWindowIcon(QIcon('logo.ico'))  # アイコンを設定
+            self.settings_window.setFocus()
+            # 閉じるボタンを作成し、右上に配置
+            close_button = QPushButton('×', self.settings_window)
+            close_button.setGeometry(self.settings_window.width()-40, 0, 40, 30)
+            close_button.setStyleSheet("border: 2px solid rgba(200, 200, 200, 250); color: white;")
+            close_button.clicked.connect(self.settings_window.close)
+
+            # ラベルを作成してテキストを設定し、ウィンドウに配置
+            label = QLabel("SETTINGS", self.settings_window)
+            label.setGeometry(10, 10, 60, 30)  # 適切な位置に配置
+            label.setStyleSheet("color: white;")
+
+            label2 = QLabel("SHOW or HIDE", self.settings_window)
+            label2.setGeometry(10, 100, 90, 30)  # 適切な位置に配置
+            label2.setStyleSheet("color: white;")
+
+            layout = QVBoxLayout()
+            self.key_label = QLabel('Get key')
+            layout.addWidget(self.key_label)
+
+            self.button = QPushButton('Get Key', self.settings_window)
+            self.button.clicked.connect(self.get_key)
+            self.button.setGeometry(90, 100, 100, 30)
+            self.button.setStyleSheet("background-color: white;")
+            self.button.clicked.connect(self.get_key)
+            layout.addWidget(self.button)
+            
+            self.settings_window.show()
+
+        def get_key(self):
+            self.key_label.setText('Set Key')
+            keyboard.on_press(self.on_press)
+
+        def on_press(self, event):
+            key = event.name
+            self.key_label.setText(f'Key pressed: {key}')
+            keyboard.unhook_all()
+            print(f'Set: {key}')
+            keyboard.add_hotkey(key, lambda: self.ShowOrHide())
+            with open('key.json', 'w') as kk:
+                json.dump(f"{key}", kk)
+            
         def mousePressEvent(self, event):
             if event.button() == Qt.LeftButton:
                 self.oldPos = event.globalPos()  # クリック時のマウス位置を取得
@@ -195,14 +251,14 @@ with open(path) as f:
             s = f.read()
             values = []
             players = who(s)
-            if players != []:
+            if players != [] and len(players) <= 16:
                 with open('table.json') as r:
                     li = json.load(r)
                     for l in li:
                         if l[0] in players:
                             players.remove(l[0])
                             values.append(l)
-                self.f5_disabled = True
+                self.pressed = True
                 self.table_widget.clearContents()
                 self.show()
                 print(players)
@@ -423,7 +479,7 @@ with open(path) as f:
                         item9.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
                         self.table_widget.setItem(num, 8, item9)
                     QApplication.processEvents()
-                self.f5_disabled = False
+                self.pressed = False
 
     if __name__ == '__main__':
         app = QApplication(sys.argv)
