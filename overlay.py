@@ -1,11 +1,12 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView, QLabel, QLineEdit
 from PyQt5.QtCore import Qt, QPoint, QTimer, QEvent, QSize
 from PyQt5.QtGui import QColor, QIcon, QPixmap
 import joblib
 import concurrent.futures
 import json
 import keyboard
+import time
 
 from who import checker
 
@@ -73,11 +74,13 @@ with open(path) as f:
             self.installEventFilter(self)
             with open('key.json') as k:
                 key = json.load(k)
-            keyboard.add_hotkey(key, lambda: self.ShowOrHide())
-            self.fdisabled = False
+            keyboard.add_hotkey(key[0], lambda: self.ShowOrHide())
+            self.pressed = False
+            self.check = False
+            self.players = []
 
         def ShowOrHide(self):
-            if not self.fdisabled:
+            if not self.pressed:
                 if self.isHidden():
                     print("show")
                     self.show()
@@ -87,12 +90,11 @@ with open(path) as f:
 
         def initUI(self):
             self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 枠を消して最前面に表示する
-            self.setGeometry(0, 0, 400, 380)  # ウィンドウサイズ
+            self.setGeometry(0, 0, 450, 380)  # ウィンドウサイズ
             self.setStyleSheet("background-color: rgba(0, 0, 0, 0.5);")
             self.setAttribute(Qt.WA_TranslucentBackground)  # 背景を透明にする
             self.setWindowIcon(QIcon('logo.ico'))  # アイコンを設定
             self.oldPos = self.pos()  # ウィンドウの初期位置
-            self.pressed = False  # f5_pressed属性を追加
             self.setFocus()
             
             # テーブルウィジェットを作成して内容を追加
@@ -109,30 +111,34 @@ with open(path) as f:
             self.table_widget.setRowCount(list_num)  # 16行に変更
             self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)
             total_width = 400
-            self.table_widget.setColumnWidth(0, 110)
-            self.table_widget.setColumnWidth(1, 30)
-            self.table_widget.setColumnWidth(2, 20)
-            self.table_widget.setColumnWidth(3, 50)
-            self.table_widget.setColumnWidth(4, 20)
-            self.table_widget.setColumnWidth(5, 20)
-            self.table_widget.setColumnWidth(6, 20)
-            self.table_widget.setColumnWidth(7, 20)
-            self.table_widget.setColumnWidth(8, 20)
-            self.table_widget.setColumnWidth(9, 20)
+            self.table_widget.setColumnWidth(0, 150)
+            self.table_widget.setColumnWidth(1, 45)
+            self.table_widget.setColumnWidth(2, 35)
+            self.table_widget.setColumnWidth(3, 43)
+            self.table_widget.setColumnWidth(4, 35)
+            self.table_widget.setColumnWidth(5, 35)
+            self.table_widget.setColumnWidth(6, 35)
+            self.table_widget.setColumnWidth(7, 35)
+            self.table_widget.setColumnWidth(8, 35)
 
             # 以下、追加した行のデータを設定
             for i in range(list_num):
                 self.table_widget.setRowHeight(i, 20)
                 
             
-            self.table_widget.setGeometry(0, 30, 400, 345)  # 位置とサイズを設定
+            self.table_widget.setGeometry(0, 30, 450, 345)  # 位置とサイズを設定
             self.table_widget.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); color: white;")
             self.table_widget.verticalHeader().setVisible(False)  # 垂直ヘッダーを非表示にする
 
             # 更新タイマーを設定して定期的にテーブルを更新
             self.update_timer = QTimer(self)
-            self.update_timer.timeout.connect(self.update_table)
+            self.update_timer.timeout.connect(self.who_checker)
             self.update_timer.start(1000)  # 1秒ごとに更新
+
+            # 更新タイマーを設定して定期的にテーブルを更新
+            self.check_timer = QTimer(self)
+            self.check_timer.timeout.connect(self.updater)
+            self.check_timer.start(1000)  # 1秒ごとに更新
 
             # 更新タイマーを設定して定期的にテーブルを更新
             self.reset_timer = QTimer(self)
@@ -150,7 +156,7 @@ with open(path) as f:
             frame.setFrameStyle(QFrame.Box)
             frame.setLineWidth(5)
             frame.setStyleSheet("border: 2px solid rgba(200, 200, 200, 250);")
-            frame.setGeometry(0, 0, 360, 30)
+            frame.setGeometry(0, 0, 410, 30)
 
             # 画像を表示するための QLabel を作成し、親を frame に設定
             image_label = QLabel(frame)
@@ -174,7 +180,7 @@ with open(path) as f:
             self.settings_button = QPushButton(self)
             self.settings_button.setIcon(QIcon("gear.png"))
             self.settings_button.setIconSize(QSize(25, 25))
-            self.settings_button.setGeometry(330, 5, 20, 20)
+            self.settings_button.setGeometry(380, 5, 20, 20)
             self.settings_button.clicked.connect(self.open_settings)
 
             # レイアウトを設定
@@ -186,10 +192,18 @@ with open(path) as f:
         def open_settings(self):
             self.settings_window = QWidget()
             self.settings_window.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 枠を消して最前面に表示する
-            self.settings_window.setGeometry(400, 0, 200, 200)  # ウィンドウサイズ
-            self.settings_window.setStyleSheet("background-color: rgba(0, 0, 0, 0.1);")
+            self.settings_window.setGeometry(450, 0, 200, 300)  # ウィンドウサイズ
+            self.settings_window.setAttribute(Qt.WA_TranslucentBackground)  # 背景を透明にする
             self.settings_window.setWindowIcon(QIcon('logo.ico'))  # アイコンを設定
             self.settings_window.setFocus()
+
+            # フレームを作成して黒い枠を設定
+            settings_frame = QFrame(self.settings_window)
+            settings_frame.setFrameStyle(QFrame.Box)
+            settings_frame.setLineWidth(5)
+            settings_frame.setStyleSheet("border: 2px solid rgba(200, 200, 200, 250); background-color: rgba(0, 0, 0, 100);")
+            settings_frame.setGeometry(0, 0, 200, 300)
+
             # 閉じるボタンを作成し、右上に配置
             close_button = QPushButton('×', self.settings_window)
             close_button.setGeometry(self.settings_window.width()-40, 0, 40, 30)
@@ -201,26 +215,64 @@ with open(path) as f:
             label.setGeometry(10, 10, 60, 30)  # 適切な位置に配置
             label.setStyleSheet("color: white;")
 
-            label2 = QLabel("SHOW or HIDE", self.settings_window)
-            label2.setGeometry(10, 100, 90, 30)  # 適切な位置に配置
-            label2.setStyleSheet("color: white;")
-
             layout = QVBoxLayout()
-            self.key_label = QLabel('Get key')
+            self.key_label = QLabel('SHOW or HIDE')
             layout.addWidget(self.key_label)
 
-            self.button = QPushButton('Get Key', self.settings_window)
+            self.button = QPushButton('SHOW or HIDE KEY', self.settings_window)
             self.button.clicked.connect(self.get_key)
-            self.button.setGeometry(90, 100, 100, 30)
+            self.button.setGeometry(10, 50, 180, 30)
             self.button.setStyleSheet("background-color: white;")
             self.button.clicked.connect(self.get_key)
             layout.addWidget(self.button)
+
+            self.input_box = QLineEdit(self.settings_window)
+            self.input_box.setGeometry(10, 100, 180, 30)
+            self.input_box.setStyleSheet("background-color: rgba(0, 0, 0, 20); color: white;")
+            layout.addWidget(self.input_box)
+
+            self.button = QPushButton('SET HYPIXEL API', self.settings_window)
+            self.button.setGeometry(10, 140, 180, 30)
+            self.button.setStyleSheet("background-color: white;")
+            self.button.clicked.connect(self.get_text)
+            layout.addWidget(self.button)
+
+            self.input_box2 = QLineEdit(self.settings_window)
+            self.input_box2.setGeometry(10, 200, 180, 30)
+            self.input_box2.setStyleSheet("background-color: rgba(0, 0, 0, 20); color: white;")
+            layout.addWidget(self.input_box2)
+
+            self.button2 = QPushButton('SET POLSU API', self.settings_window)
+            self.button2.setGeometry(10, 240, 180, 30)
+            self.button2.setStyleSheet("background-color: white;")
+            self.button2.clicked.connect(self.get_text_polsu)
+            layout.addWidget(self.button2)
             
             self.settings_window.show()
 
         def get_key(self):
             self.key_label.setText('Set Key')
             keyboard.on_press(self.on_press)
+        
+        def get_text(self):
+            key = self.input_box.text()
+            print("Set HYPIXEL API:", key)
+            if key != "":
+                with open('key.json') as k:
+                    read_key = json.load(k)
+                read_key[1] = key
+                with open('key.json', 'w') as kk:
+                    json.dump(read_key, kk)
+        
+        def get_text_polsu(self):
+            key = self.input_box2.text()
+            print("Set POLSU API:", key)
+            if key != "":
+                with open('key.json') as k:
+                    read_key = json.load(k)
+                read_key[2] = key
+                with open('key.json', 'w') as kk:
+                    json.dump(read_key, kk)
 
         def on_press(self, event):
             key = event.name
@@ -228,8 +280,11 @@ with open(path) as f:
             keyboard.unhook_all()
             print(f'Set: {key}')
             keyboard.add_hotkey(key, lambda: self.ShowOrHide())
+            with open('key.json') as k:
+                read_key = json.load(k)
+            read_key[0] = key
             with open('key.json', 'w') as kk:
-                json.dump(f"{key}", kk)
+                json.dump(read_key, kk)
             
         def mousePressEvent(self, event):
             if event.button() == Qt.LeftButton:
@@ -243,22 +298,20 @@ with open(path) as f:
         def reset_json(self):
             with open('table.json', 'w') as w3:
                 json.dump([], w3)
-        def update_table(self):
-            model = joblib.load('Cheater.pkl')
-            scaler = joblib.load('scaler.joblib')
-            mode_list = ["bed.png", "eye.png", "tnt.png", "gapple.png", "bow.png", "bench.png", "fishing.png", "hub.png", "dirt.png", "none.png"]
-            # checker関数を使ってログ内容から更新する値を取得
-            s = f.read()
-            values = []
-            players = who(s)
-            if players != [] and len(players) <= 16:
+
+        def updater(self):
+            if self.check:
+                players = self.players
+                values = []
+                model = joblib.load('Cheater.pkl')
+                scaler = joblib.load('scaler.joblib')
+                mode_list = ["bed.png", "eye.png", "tnt.png", "gapple.png", "bow.png", "bench.png", "fishing.png", "hub.png", "dirt.png", "none.png"]
                 with open('table.json') as r:
                     li = json.load(r)
                     for l in li:
-                        if l[0] in players:
+                        if l[0] in players and time.time() - l[7] <= 60:
                             players.remove(l[0])
                             values.append(l)
-                self.pressed = True
                 self.table_widget.clearContents()
                 self.show()
                 print(players)
@@ -266,9 +319,14 @@ with open(path) as f:
                     return_value = list(executor.map(lambda mcid: checker(mcid, model, scaler), players))
                     values += return_value
                 with open('table.json', 'wt') as w2:
-                    json.dump(return_value, w2, indent=4)
+                    now = time.time()
+                    save_list = []
+                    for value in return_value:
+                        value.append(now)
+                        save_list.append(value)
+                    json.dump(save_list, w2, indent=4)
                 for num, updated_values in enumerate(values):
-                    # print(updated_values, type(updated_values))
+                    print(updated_values)
                     met_num = 0
                     with open('met_player.json') as r:
                         di = json.load(r)
@@ -313,12 +371,19 @@ with open(path) as f:
                     elif updated_values[4] <= 2:
                         qb_color = QColor(255, 0, 0)
                         back_qb = QColor(200, 0, 0, 50)
-                    elif updated_values[2] == 1:
+                    elif updated_values[4] == 1:
                         qb_color = QColor(255, 165, 0)
                         back_qb = QColor(200, 135, 0, 30)
                     else:
                         qb_color = QColor(255, 255, 255)
                         back_qb = QColor(200, 200, 200, 30)
+
+                    language_list = ["ENGLISH", "JAPANESE", "None"]
+                    language_list2 = ["ENG", "JP", "none"]
+                    if updated_values[5] in language_list:
+                        updated_values[5] = language_list2[language_list.index(updated_values[5])]
+                    else:
+                        updated_values[5] = "oth"
                     if updated_values != None and updated_values[1] != None:
                         # テーブルのセルに更新した値を設定
                         if updated_values[3] != None:
@@ -344,7 +409,7 @@ with open(path) as f:
                         item1.setForeground(QColor(255, 255, 255))
                         font = item1.font()  # フォントを取得
                         font.setBold(True)  # フォントを太くする
-                        font.setPointSize(9)
+                        font.setPointSize(11)
                         item1.setFont(font)  # 変更したフォントをセット
                         item1.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
                         self.table_widget.setItem(num, 0, item1)
@@ -353,7 +418,7 @@ with open(path) as f:
                         item2.setForeground(g_color)
                         font = item2.font()  # フォントを取得
                         font.setBold(True)  # フォントを太くする
-                        font.setPointSize(10)
+                        font.setPointSize(11)
                         item2.setFont(font)  # 変更したフォントをセット
                         item2.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                         item2.setBackground(back_g)  # 背景色を設定
@@ -373,8 +438,9 @@ with open(path) as f:
                         item4.setForeground(QColor(255, 255, 255))
                         font = item4.font()  # フォントを取得
                         font.setBold(True)  # フォントを太くする
-                        font.setPointSize(7)
+                        font.setPointSize(12)
                         item4.setFont(font)  # 変更したフォントをセット
+                        item4.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                         item4.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
                         self.table_widget.setItem(num, 3, item4)
 
@@ -417,7 +483,7 @@ with open(path) as f:
                         item1.setForeground(g_color)
                         font = item1.font()  # フォントを取得
                         font.setBold(True)  # フォントを太くする
-                        font.setPointSize(9)
+                        font.setPointSize(11)
                         item1.setFont(font)  # 変更したフォントをセット
                         item1.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
                         self.table_widget.setItem(num, 0, item1)
@@ -425,7 +491,7 @@ with open(path) as f:
                         item2.setForeground(g_color)
                         font = item2.font()  # フォントを取得
                         font.setBold(True)  # フォントを太くする
-                        font.setPointSize(10)
+                        font.setPointSize(11)
                         item2.setFont(font)  # 変更したフォントをセット
                         item2.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                         item2.setBackground(back_g)  # 背景色を設定
@@ -443,7 +509,7 @@ with open(path) as f:
                         item4.setForeground(QColor(255, 255, 255))
                         font = item4.font()  # フォントを取得
                         font.setBold(True)  # フォントを太くする
-                        font.setPointSize(7)
+                        font.setPointSize(10)
                         item4.setFont(font)  # 変更したフォントをセット
                         item4.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                         item4.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
@@ -480,6 +546,15 @@ with open(path) as f:
                         self.table_widget.setItem(num, 8, item9)
                     QApplication.processEvents()
                 self.pressed = False
+                self.check = False
+        
+        def who_checker(self):
+            s = f.read()
+            players = who(s)
+            if players != [] and len(players) <= 16:
+                self.pressed = True
+                self.players = players
+                self.check = True
 
     if __name__ == '__main__':
         app = QApplication(sys.argv)

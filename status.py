@@ -145,10 +145,10 @@ def games(uuid, API_KEY):
                 game_nums.append(9)
     return game_nums
 
-def pols(uuid):
+def pols(uuid, POLSU_KEY):
     url = "https://api.polsu.xyz/polsu/ping"
     querystring = {"uuid":f"{uuid}"}
-    headers = {"Api-Key": "a5759d02-94e9-466a-8e40-6679b1ccb256"}
+    headers = {"Api-Key": POLSU_KEY}
 
     response = requests.get(url, headers=headers, params=querystring)
 
@@ -159,16 +159,17 @@ def pols(uuid):
         ping = "???"
     return ping
 
-def status(name, API_KEY):
+def status(name, API_KEY, POLSU_KEY):
     name_link = f"https://api.mojang.com/users/profiles/minecraft/{name}"
     info = getinfo(name_link)
     if info != None and "id" in info:
         uuid = info["id"]
-        return [get_status(uuid, API_KEY)[0], pols(uuid), games(uuid, API_KEY), get_status(uuid, API_KEY)[1], get_status(uuid, API_KEY)[2], uuid]
+        return_status = get_status(uuid, API_KEY)
+        return [return_status[0], pols(uuid, POLSU_KEY), games(uuid, API_KEY), return_status[1], return_status[2], uuid]
     else:
         return [None, None, None, None, None, None]
 
-# API_KEY = "456aa888-2e2c-4f8c-86a5-6994ab5b5941"
+# API_KEY = "05150d49-71a8-4206-8b19-827f81f55f8b"
 # name = "Gokiton"
 # print(status(name, API_KEY))
 
