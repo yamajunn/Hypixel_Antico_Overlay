@@ -1,13 +1,15 @@
-import pandas as pd
+# import pandas as pd
 
-def judgment_cheater(data, model, scaler):
-    columns = ['networkExp', 'bedwars_level', 'Experience', 'beds_broken_bedwars', 'beds_lost_bedwars', 'coins', 'deaths_bedwars', 'diamond_resources_collected_bedwars', 'emerald_resources_collected_bedwars', 'final_deaths_bedwars', 'final_kills_bedwars', 'games_played_bedwars', 'games_played_bedwars_1', 'kills_bedwars', 'losses_bedwars', 'void_final_deaths_bedwars',  'wins_bedwars','fkdr','wlr','bblr','fk_lev','bb_lev','kill_lev']
-    scaled = pd.DataFrame([data], columns=columns)
-    scaled = scaler.transform(scaled)
+# def judgment_cheater(data, model, scaler):
+#     columns = ['networkExp', 'bedwars_level', 'Experience', 'beds_broken_bedwars', 'beds_lost_bedwars', 'coins', 'deaths_bedwars', 'diamond_resources_collected_bedwars', 'emerald_resources_collected_bedwars', 'final_deaths_bedwars', 'final_kills_bedwars', 'games_played_bedwars', 'games_played_bedwars_1', 'kills_bedwars', 'losses_bedwars', 'void_final_deaths_bedwars',  'wins_bedwars','fkdr','wlr','bblr','fk_lev','bb_lev','kill_lev']
+#     scaled = pd.DataFrame([data], columns=columns)
+#     scaled = scaler.transform(scaled)
 
-    y_pred = model.predict_proba(scaled)
-    # print(y_pred)
-    return y_pred[0][0]
+#     y_pred = model.predict_proba(scaled)
+#     # print(y_pred)
+#     return y_pred[0][0]
+
+
 
 # import joblib
 # model = joblib.load('Cheater.pkl')
