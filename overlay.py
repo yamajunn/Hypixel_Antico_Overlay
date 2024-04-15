@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView, QLabel, QLineEdit, QFileDialog, QDesktopWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView, QLabel, QLineEdit, QFileDialog, QDesktopWidget, QHeaderView
 from PyQt5.QtCore import Qt, QPoint, QTimer, QSize
 from PyQt5.QtGui import QColor, QIcon, QPixmap
 import joblib
@@ -270,9 +270,10 @@ try:
     with open('key.json') as k:
         key = json.load(k)
         print(key)
-except FileNotFoundError:
+        key[6]
+except Exception:
     with open('key.json', 'w') as kk:
-        json.dump(["f5", "05150d49-71a8-4206-8b19-827f81f55f8b", "a5759d02-94e9-466a-8e40-6679b1ccb256", "C:/Users/Owner/AppData/Roaming/.minecraft/logs/blclient/minecraft/latest.log", 0, 0], kk)
+        json.dump(["f5", "838bf3d7-9d38-4d3d-a99f-a967ba52c208", "a5759d02-94e9-466a-8e40-6679b1ccb256", "C:/Users/Owner/AppData/Roaming/.minecraft/logs/blclient/minecraft/latest.log", 0, 0, 13], kk)
     with open('key.json') as k:
         key = json.load(k)
         print(key)
@@ -304,8 +305,8 @@ def antico():
             def initUI(self):
                 screen = QDesktopWidget().screenGeometry()
                 self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 枠を消して最前面に表示する
-                self.setGeometry(key[4], key[5], int(screen.width()//2.5), screen.height()//2)  # ウィンドウサイズ
-                self.setStyleSheet("background-color: rgba(0, 0, 0, 0.5);")
+                self.setGeometry(key[4], key[5], int(screen.width()//1.5), int(screen.height()//1.5))  # ウィンドウサイズ
+                self.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
                 self.setAttribute(Qt.WA_TranslucentBackground)  # 背景を透明にする
                 self.setWindowIcon(QIcon(resource_path('logo.ico')))  # アイコンを設定
                 self.oldPos = self.pos()  # ウィンドウの初期位置
@@ -313,9 +314,18 @@ def antico():
                 
                 # テーブルウィジェットを作成して内容を追加
                 self.table_widget = QTableWidget(self)
-                self.table_widget.setStyleSheet(
+                horizontal_header = self.table_widget.horizontalHeader()
+                horizontal_header.setStyleSheet(
                     "QHeaderView::section {"
-                    "    background-color: rgba(255, 255, 255, 0.2);"
+                    "    background-color: rgba(0, 0, 0, 0.5);"
+                    "    color: white;"
+                    "}"
+                )
+
+                vertical_header = self.table_widget.verticalHeader()
+                vertical_header.setStyleSheet(
+                    "QHeaderView::section {"
+                    "    background-color: rgba(0, 0, 0, 0.5);"
                     "    color: white;"
                     "}"
                 )
@@ -324,25 +334,38 @@ def antico():
                 list_num = 16
                 self.table_widget.setRowCount(list_num)  # 16行に変更
                 self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)
-                total_width = 400
-                self.table_widget.setColumnWidth(0, self.width()//4)
-                self.table_widget.setColumnWidth(1, self.width()//10)
-                self.table_widget.setColumnWidth(2, self.width()//10)
-                self.table_widget.setColumnWidth(3, self.width()//10)
-                self.table_widget.setColumnWidth(4, self.width()//11)
-                self.table_widget.setColumnWidth(5, self.width()//11)
-                self.table_widget.setColumnWidth(6, self.width()//11)
-                self.table_widget.setColumnWidth(7, self.width()//11)
-                self.table_widget.setColumnWidth(8, self.width()//11)
+                self.table_widget.setFrameStyle(QFrame.NoFrame)
+
+                self.table_widget.setColumnWidth(0, screen.width()//12)
+                self.table_widget.setColumnWidth(1, screen.width()//27)
+                self.table_widget.setColumnWidth(2, screen.width()//27)
+                self.table_widget.setColumnWidth(3, screen.width()//27)
+                self.table_widget.setColumnWidth(4, screen.width()//27)
+                self.table_widget.setColumnWidth(5, screen.width()//27)
+                self.table_widget.setColumnWidth(6, screen.width()//27)
+                self.table_widget.setColumnWidth(7, screen.width()//27)
+                self.table_widget.setColumnWidth(8, screen.width()//27)
 
                 # 以下、追加した行のデータを設定
                 for i in range(list_num):
-                    self.table_widget.setRowHeight(i, self.height()//16-3)
-                    
-                
-                self.table_widget.setGeometry(0, 30, self.width(), self.height()-30)  # 位置とサイズを設定
-                self.table_widget.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); color: white;")
-                self.table_widget.verticalHeader().setVisible(False)  # 垂直ヘッダーを非表示にする
+                    self.table_widget.setRowHeight(i, screen.height()//35)
+
+                self.table_widget.setGeometry(0, 30, screen.width(), screen.height())  # 位置とサイズを設定
+
+                # self.table_widget.setGeometry(0, 30, 800, screen.height()//2)  # 位置とサイズを設定
+                self.table_widget.setStyleSheet("""
+                    background-color: rgba(0, 0, 0, 0); 
+                    color: white; 
+                    QTableWidget::corner { 
+                        background-color: rgba(255, 255, 255, 0.2); 
+                        color: white; 
+                    }
+                    QTableCornerButton::section {
+                        border-width: 1px; 
+                        border-color: #BABABA; 
+                        border-style: solid;
+                    }
+                """)
 
                 # 更新タイマーを設定して定期的にテーブルを更新
                 self.update_timer = QTimer(self)
@@ -361,16 +384,16 @@ def antico():
 
                 # 閉じるボタン
                 self.closeButton = QPushButton('×', self)
-                self.closeButton.setGeometry(self.width()-40, 0, 40, 30)
-                self.closeButton.setStyleSheet("border: 2px solid rgba(200, 200, 200, 250); color: white;")
+                self.closeButton.setGeometry(int(screen.width()//2.5)-200, 0, 40, 30)
+                self.closeButton.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); border: 2px solid rgba(200, 200, 200, 250); color: white;")
                 self.closeButton.clicked.connect(self.close)
 
                 # フレームを作成して黒い枠を設定
                 frame = QFrame(self)
                 frame.setFrameStyle(QFrame.Box)
                 frame.setLineWidth(5)
-                frame.setStyleSheet("border: 2px solid rgba(200, 200, 200, 250);")
-                frame.setGeometry(0, 0, self.width()-40, 30)
+                frame.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); border: 2px solid rgba(200, 200, 200, 250);")
+                frame.setGeometry(0, 0, int(screen.width()//2.5)-200, 30)
 
                 # 画像を表示するための QLabel を作成し、親を frame に設定
                 image_label = QLabel(frame)
@@ -394,7 +417,7 @@ def antico():
                 self.settings_button = QPushButton(self)
                 self.settings_button.setIcon(QIcon(resource_path("gear.png")))
                 self.settings_button.setIconSize(QSize(25, 25))
-                self.settings_button.setGeometry(self.width()-80, 5, 20, 20)
+                self.settings_button.setGeometry(int(screen.width()//2.5)-240, 5, 20, 20)
                 self.settings_button.clicked.connect(self.open_settings)
 
                 # レイアウトを設定
@@ -404,9 +427,10 @@ def antico():
                 self.setLayout(layout)
 
             def open_settings(self):
+                screen = QDesktopWidget().screenGeometry()
                 self.settings_window = QWidget()
                 self.settings_window.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 枠を消して最前面に表示する
-                self.settings_window.setGeometry(self.x()+self.width(), self.y(), 200, 375)  # ウィンドウサイズ
+                self.settings_window.setGeometry(self.x()+int(screen.width()//2.5)-160, self.y(), 200, 375)  # ウィンドウサイズ
                 self.settings_window.setAttribute(Qt.WA_TranslucentBackground)  # 背景を透明にする  
                 self.settings_window.setWindowIcon(QIcon(resource_path('logo.ico')))  # アイコンを設定
                 self.settings_window.setFocus()
@@ -430,10 +454,22 @@ def antico():
                 label.setStyleSheet("color: white;")
 
                 layout = QVBoxLayout()
-                self.key_label = QLabel('SHOW or HIDE')
+
+                self.input_box_f = QLineEdit(self.settings_window)
+                self.input_box_f.setGeometry(10, 40, 70, 30)
+                self.input_box_f.setStyleSheet("background-color: rgba(0, 0, 0, 20); color: white;")
+                layout.addWidget(self.input_box_f)
+
+                self.button = QPushButton('SET FONT SIZE', self.settings_window)
+                self.button.clicked.connect(self.get_font)
+                self.button.setGeometry(90, 40, 100, 30)
+                self.button.setStyleSheet("background-color: white;")
+                layout.addWidget(self.button)
+
+                self.key_label = QLabel('PLESS THE SHOW or HIDE KEY')
                 layout.addWidget(self.key_label)
 
-                self.button = QPushButton('SHOW or HIDE KEY', self.settings_window)
+                self.button = QPushButton('PLESS THE SHOW or HIDE KEY', self.settings_window)
                 self.button.clicked.connect(self.get_key)
                 self.button.setGeometry(10, 80, 180, 30)
                 self.button.setStyleSheet("background-color: white;")
@@ -493,6 +529,16 @@ def antico():
                     with open('key.json', 'w') as kk:
                         json.dump(read_key, kk)
             
+            def get_font(self):
+                key = self.input_box_f.text()
+                print("Set Font:", key)
+                if key != "" and key.isdecimal():
+                    with open('key.json') as k:
+                        read_key = json.load(k)
+                    read_key[6] = int(key)
+                    with open('key.json', 'w') as kk:
+                        json.dump(read_key, kk)
+            
             def get_text_polsu(self):
                 key = self.input_box2.text()
                 print("Set POLSU API:", key)
@@ -525,7 +571,8 @@ def antico():
                     delta = QPoint(event.globalPos() - self.oldPos)  # 移動量を計算
                     self.move(self.x() + delta.x(), self.y() + delta.y())  # ウィンドウを移動
                     try:
-                        self.settings_window.move(self.x() + delta.x()+self.width(), self.y() + delta.y())
+                        screen = QDesktopWidget().screenGeometry()
+                        self.settings_window.move(self.x() + int(screen.width()//2.5)-110, self.y() + delta.y())
                     except AttributeError:
                         pass
                     # print(self.x() + delta.x(), self.y() + delta.y())
@@ -587,37 +634,39 @@ def antico():
                         pixmap1 = pixmap1.scaled(28, 28)
                         pixmap2 = pixmap2.scaled(28, 28)
 
+                        font_size = int(key[6])
+
                         if updated_values[1] == None or updated_values[1] == "???" or float(updated_values[1]) >= 0.9:
                             g_color = QColor(255, 0, 0)
-                            back_g = QColor(200, 0, 0, 30)
+                            back_g = QColor(150, 0, 0, 30)
                         elif updated_values[1] >= 0.6:
                             g_color = QColor(255, 165, 0)
-                            back_g = QColor(200, 135, 0, 30)
+                            back_g = QColor(150, 85, 0, 30)
                         else:
                             g_color = QColor(255, 255, 255)
-                            back_g = QColor(200, 200, 200, 30)
+                            back_g = QColor(150, 150, 150, 30)
                         if updated_values[2] is None or updated_values[2] == "???" or updated_values[2] > 230:
                             ping_color = QColor(255, 0, 0)
-                            back_ping = QColor(200, 0, 0, 30)
+                            back_ping = QColor(150, 0, 0, 30)
                         elif 170 <= updated_values[2] <= 230:
                             ping_color = QColor(255, 165, 0)
-                            back_ping = QColor(200, 135, 0, 30)
+                            back_ping = QColor(150, 85, 0, 30)
                         else:
                             ping_color = QColor(255, 255, 255)
-                            back_ping = QColor(200, 200, 200, 30)
+                            back_ping = QColor(150, 150, 201500, 30)
                         if updated_values[4] is None or updated_values[4] == "???":
                             qb_color = QColor(255, 0, 0)
-                            back_qb = QColor(200, 0, 0, 30)
+                            back_qb = QColor(150, 0, 0, 30)
                             updated_values[4] = "???"
                         elif updated_values[4] == 3:
                             qb_color = QColor(255, 0, 0)
-                            back_qb = QColor(200, 0, 0, 50)
+                            back_qb = QColor(150, 0, 0, 50)
                         elif updated_values[4] == 1 or updated_values[4] == 2:
                             qb_color = QColor(255, 165, 0)
-                            back_qb = QColor(200, 135, 0, 30)
+                            back_qb = QColor(150, 85, 0, 30)
                         else:
                             qb_color = QColor(255, 255, 255)
-                            back_qb = QColor(200, 200, 200, 30)
+                            back_qb = QColor(150, 150, 150, 30)
 
                         language_list = ["ENGLISH", "JAPANESE", "None"]
                         language_list2 = ["ENG", "JP", "none"]
@@ -640,17 +689,18 @@ def antico():
                                     pixmap0 = QPixmap(resource_path(mode_list[updated_values[3][0]]))
                                     pixmap1 = QPixmap(resource_path(mode_list[9]))
                                     pixmap2 = QPixmap(resource_path(mode_list[9]))
-
+                            
+                            screen = QDesktopWidget().screenGeometry()
                             # 画像を適切なサイズにスケーリング
                             pixmap0 = pixmap0.scaled(28, 28)
                             pixmap1 = pixmap1.scaled(28, 28)
                             pixmap2 = pixmap2.scaled(28, 28)
-                            
+
                             item1 = QTableWidgetItem(str(updated_values[0]))
                             item1.setForeground(QColor(255, 255, 255))
                             font = item1.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item1.setFont(font)  # 変更したフォントをセット
                             item1.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
                             self.table_widget.setItem(num, 0, item1)
@@ -659,7 +709,7 @@ def antico():
                             item2.setForeground(g_color)
                             font = item2.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item2.setFont(font)  # 変更したフォントをセット
                             item2.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item2.setBackground(back_g)  # 背景色を設定
@@ -669,7 +719,7 @@ def antico():
                             item3.setForeground(ping_color)
                             font = item3.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item3.setFont(font)  # 変更したフォントをセット
                             item3.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item3.setBackground(back_ping)  # 背景色を設定
@@ -679,7 +729,7 @@ def antico():
                             item4.setForeground(QColor(255, 255, 255))
                             font = item4.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item4.setFont(font)  # 変更したフォントをセット
                             item4.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item4.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
@@ -704,7 +754,7 @@ def antico():
                             item8.setForeground(qb_color)
                             font = item8.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item8.setFont(font)  # 変更したフォントをセット
                             item8.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item8.setBackground(back_qb)  # 背景色を設定
@@ -714,7 +764,7 @@ def antico():
                             item9.setForeground(QColor(255, 255, 255))
                             font = item9.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item9.setFont(font)  # 変更したフォントをセット
                             item9.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item9.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
@@ -724,7 +774,7 @@ def antico():
                             item1.setForeground(g_color)
                             font = item1.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item1.setFont(font)  # 変更したフォントをセット
                             item1.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
                             self.table_widget.setItem(num, 0, item1)
@@ -732,7 +782,7 @@ def antico():
                             item2.setForeground(g_color)
                             font = item2.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item2.setFont(font)  # 変更したフォントをセット
                             item2.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item2.setBackground(back_g)  # 背景色を設定
@@ -741,7 +791,7 @@ def antico():
                             item3.setForeground(ping_color)
                             font = item3.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item3.setFont(font)  # 変更したフォントをセット
                             item3.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item3.setBackground(back_ping)  # 背景色を設定
@@ -750,7 +800,7 @@ def antico():
                             item4.setForeground(QColor(255, 0, 0))
                             font = item4.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item4.setFont(font)  # 変更したフォントをセット
                             item4.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item4.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
@@ -771,7 +821,7 @@ def antico():
                             item8.setForeground(qb_color)
                             font = item8.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item8.setFont(font)  # 変更したフォントをセット
                             item8.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item8.setBackground(back_qb)  # 背景色を設定
@@ -780,7 +830,7 @@ def antico():
                             item9.setForeground(QColor(255, 255, 255))
                             font = item9.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
-                            font.setPointSize(self.height()//38)
+                            font.setPointSize(font_size)
                             item9.setFont(font)  # 変更したフォントをセット
                             item9.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item9.setBackground(QColor(255, 255, 255, 30))  # 背景色を設定
@@ -791,7 +841,7 @@ def antico():
             
             def who_checker(self):
                 s = f.read()
-                print(s)
+                # print(s)
                 players = who(s)
                 if players != [] and len(players) <= 16:
                     self.pressed = True
@@ -819,9 +869,10 @@ def setting():
                 self.settings_window = None  # 初期化しておく
                 self.initUI()  # initUI を呼び出す
             def settings(self):
+                screen = QDesktopWidget().screenGeometry()
                 self.settings_window = QWidget()
                 self.settings_window.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 枠を消して最前面に表示する
-                self.settings_window.setGeometry(0, 0, 200, 375)  # ウィンドウサイズ
+                self.settings_window.setGeometry(0, 0, 200, 410)  # ウィンドウサイズ
                 self.settings_window.setAttribute(Qt.WA_TranslucentBackground)  # 背景を透明にする
                 self.settings_window.setWindowIcon(QIcon(resource_path('logo.ico')))  # アイコンを設定
                 self.settings_window.setFocus()
@@ -831,7 +882,7 @@ def setting():
                 settings_frame.setFrameStyle(QFrame.Box)
                 settings_frame.setLineWidth(5)
                 settings_frame.setStyleSheet("border: 2px solid rgba(200, 200, 200, 250); background-color: rgba(0, 0, 0, 100);")
-                settings_frame.setGeometry(0, 0, 200, 375)
+                settings_frame.setGeometry(0, 0, 200, 410)
 
                 # 閉じるボタンを作成し、右上に配置
                 close_button = QPushButton('×', self.settings_window)
@@ -845,46 +896,58 @@ def setting():
                 label.setStyleSheet("color: white;")
 
                 layout = QVBoxLayout()
-                self.key_label = QLabel('SHOW or HIDE')
+
+                self.input_box_f = QLineEdit(self.settings_window)
+                self.input_box_f.setGeometry(10, 40, 70, 30)
+                self.input_box_f.setStyleSheet("background-color: rgba(0, 0, 0, 20); color: white;")
+                layout.addWidget(self.input_box_f)
+
+                self.button = QPushButton('SET FONT SIZE', self.settings_window)
+                self.button.clicked.connect(self.get_font)
+                self.button.setGeometry(90, 40, 100, 30)
+                self.button.setStyleSheet("background-color: white;")
+                layout.addWidget(self.button)
+
+                self.key_label = QLabel('PLESS THE SHOW or HIDE KEY')
                 layout.addWidget(self.key_label)
 
-                self.button = QPushButton('SHOW or HIDE KEY', self.settings_window)
+                self.button = QPushButton('PLESS THE SHOW or HIDE KEY', self.settings_window)
                 self.button.clicked.connect(self.get_key)
-                self.button.setGeometry(10, 50, 180, 30)
+                self.button.setGeometry(10, 80, 180, 30)
                 self.button.setStyleSheet("background-color: white;")
                 self.button.clicked.connect(self.get_key)
                 layout.addWidget(self.button)
 
                 self.input_box = QLineEdit(self.settings_window)
-                self.input_box.setGeometry(10, 100, 180, 30)
+                self.input_box.setGeometry(10, 130, 180, 30)
                 self.input_box.setStyleSheet("background-color: rgba(0, 0, 0, 20); color: white;")
                 layout.addWidget(self.input_box)
 
                 self.button = QPushButton('SET HYPIXEL API', self.settings_window)
-                self.button.setGeometry(10, 135, 180, 30)
+                self.button.setGeometry(10, 165, 180, 30)
                 self.button.setStyleSheet("background-color: white;")
                 self.button.clicked.connect(self.get_text)
                 layout.addWidget(self.button)
 
                 self.input_box2 = QLineEdit(self.settings_window)
-                self.input_box2.setGeometry(10, 185, 180, 30)
+                self.input_box2.setGeometry(10, 215, 180, 30)
                 self.input_box2.setStyleSheet("background-color: rgba(0, 0, 0, 20); color: white;")
                 layout.addWidget(self.input_box2)
 
                 self.button2 = QPushButton('SET POLSU API', self.settings_window)
-                self.button2.setGeometry(10, 220, 180, 30)
+                self.button2.setGeometry(10, 250, 180, 30)
                 self.button2.setStyleSheet("background-color: white;")
                 self.button2.clicked.connect(self.get_text_polsu)
                 layout.addWidget(self.button2)
 
                 self.button3 = QPushButton('SELECT LOG FILE', self.settings_window)
-                self.button3.setGeometry(10, 270, 180, 30)
+                self.button3.setGeometry(10, 300, 180, 30)
                 self.button3.setStyleSheet("background-color: rgba(240, 200, 200, 250);")
                 self.button3.clicked.connect(self.get_file_path)
                 layout.addWidget(self.button3)
 
                 self.button4 = QPushButton('EXIT (PLZ RESTART)', self.settings_window)
-                self.button4.setGeometry(30, 320, 140, 30)
+                self.button4.setGeometry(30, 350, 140, 30)
                 self.button4.setStyleSheet("background-color: rgba(150, 150, 150, 250);")
                 self.button4.clicked.connect(self.close_window)
                 layout.addWidget(self.button4)
@@ -898,6 +961,16 @@ def setting():
             def get_key(self):
                 self.key_label.setText('Set Key')
                 keyboard.on_press(self.on_press)
+
+            def get_font(self):
+                key = self.input_box_f.text()
+                print("Set Font:", key)
+                if key != "":
+                    with open('key.json') as k:
+                        read_key = json.load(k)
+                    read_key[6] = key
+                    with open('key.json', 'w') as kk:
+                        json.dump(read_key, kk)
             
             def get_file_path(self):
                 file_dialog = QFileDialog()
