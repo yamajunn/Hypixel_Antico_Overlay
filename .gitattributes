@@ -1,3 +1,7 @@
 dist/overlay.exe filter=lfs diff=lfs merge=lfs -text
 overlay.exe filter=lfs diff=lfs merge=lfs -text
 overlay.pkg filter=lfs diff=lfs merge=lfs -text
+Anticov1.7.exe filter=lfs diff=lfs merge=lfs -text
+Anticov2.0.pkg filter=lfs diff=lfs merge=lfs -text
+Anticov2.0.exe filter=lfs diff=lfs merge=lfs -text
+Antico.pkg filter=lfs diff=lfs merge=lfs -text
