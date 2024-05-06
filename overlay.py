@@ -1088,4 +1088,4 @@ setting()
 # name = "Gokiton"
 # model = joblib.load(resource_path('Cheater.pkl'))
 # scaler = joblib.load(resource_path('scaler.joblib'))
-# print(checker(name, model, scaler))                   
+# print(checker(name, model, scaler))
