@@ -15,56 +15,62 @@ import subprocess
 from functools import partial
 
 dic_labels = [
-    # 'karma',
+    'karma',
     'networkExp',
-    ]
+    # 'newPackageRank',
+    # 'particlePack',
+    # 'playername',
+    # 'questSettings',
+    # 'rankPlusColor',
+]
 achievements = [
-    # 'bedwars_beds',
-    # 'bedwars_bedwars_challenger',
-    # 'bedwars_bedwars_killer',
-    # 'bedwars_collectors_edition',
+    'bedwars_beds',
+    'bedwars_bedwars_challenger',
+    'bedwars_bedwars_killer',
+    'bedwars_collectors_edition',
     'bedwars_level',
-    # 'bedwars_loot_box',
-    # 'bedwars_slumber_ticket_master',
-    # 'bedwars_wins',
-    ]
+    'bedwars_loot_box',
+    'bedwars_slumber_ticket_master',
+    'bedwars_wins',
+]
 challenges = [
-    # 'challenges',
-    # 'all_time',
-    # 'BEDWARS__defensive',
-    # 'BEDWARS__offensive',
-    # 'BEDWARS__support',
-    ]
+    'challenges','all_time'
+    'BEDWARS__defensive',
+    'BEDWARS__offensive',
+    'BEDWARS__support',
+]
 statuses = [
-    # 'Bedwars_openedChests',
+    'Bedwars_openedChests',
     'Experience',
-    # '_items_purchased_bedwars',
+    '_items_purchased_bedwars',
+    # 'activeWoodType',
     'beds_broken_bedwars',
-    'beds_lost_bedwars',    
+    'beds_lost_bedwars',
     'coins',
     'deaths_bedwars',
     'diamond_resources_collected_bedwars',
     'emerald_resources_collected_bedwars',
-    # 'fall_deaths_bedwars',
-    # 'fall_final_deaths_bedwars',
-    # 'fall_final_kills_bedwars',
-    # 'fall_kills_bedwars',
+    'fall_deaths_bedwars',
+    'fall_final_deaths_bedwars',
+    'fall_final_kills_bedwars',
+    'fall_kills_bedwars',
+    # 'favourites_2',
     'final_deaths_bedwars',
     'final_kills_bedwars',
     'games_played_bedwars',
     'games_played_bedwars_1',
     'kills_bedwars',
     'losses_bedwars',
-    # 'void_deaths_bedwars',
+    'void_deaths_bedwars',
     'void_final_deaths_bedwars',
-    # 'void_final_kills_bedwars',
-    # 'void_kills_bedwars',
+    'void_final_kills_bedwars',
+    'void_kills_bedwars',
     'wins_bedwars',
-    ]
+]
 
 def getinfo(call):
     try:
-        r = requests.get(call, timeout=10)
+        r = requests.get(call, timeout=5)
         r.raise_for_status()  # エラーがあれば例外を発生させる
         return r.json()
     except requests.exceptions.RequestException as e:
@@ -78,7 +84,6 @@ def get_language(data_dic):
     if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and "userLanguage" in data_dic["player"]:
         return data_dic["player"]["userLanguage"]
 def get_status(uuid, API_KEY):
-    print(uuid)
     uuid_link = f"https://api.hypixel.net/player?key={API_KEY}&uuid={uuid}"
     data_dic = getinfo(uuid_link)
     # pprint.pprint(data_dic)
@@ -108,12 +113,12 @@ def get_status(uuid, API_KEY):
                 else:
                     datas.append(0)
             for a in range(len(datas)):
-                # if a in [27,32,18,6]:
-                if a in [9, 14, 4, 1]:
+                if a in [27,32,18,6]:
+                # if a in [9, 14, 4, 1]:
                     if datas[a] == 0:
                         datas[a] = 1
-            # for j in [datas[28] / datas[27], datas[37] / datas[32], datas[17] / datas[18], datas[28] / datas[6], datas[31] / datas[6], datas[17] / datas[6]]:
-            for j in [datas[10] / datas[9], datas[16] / datas[14], datas[3] / datas[4], datas[10] / datas[1], datas[13] / datas[1], datas[3] / datas[1]]:
+            for j in [datas[28] / datas[27], datas[37] / datas[32], datas[17] / datas[18], datas[28] / datas[6], datas[31] / datas[6], datas[17] / datas[6]]:
+            # for j in [datas[10] / datas[9], datas[16] / datas[14], datas[3] / datas[4], datas[10] / datas[1], datas[13] / datas[1], datas[3] / datas[1]]:
                 datas.append(j)
         return [datas, get_shop(data_dic), get_language(data_dic)]
     else:
@@ -186,9 +191,51 @@ def status(name, API_KEY, POLSU_KEY):
         return [None, None, None, None, None, None]
 
 def judgment_cheater(data, model, scaler):
-    columns = ['networkExp', 'bedwars_level', 'Experience', 'beds_broken_bedwars', 'beds_lost_bedwars', 'coins', 'deaths_bedwars', 'diamond_resources_collected_bedwars', 'emerald_resources_collected_bedwars', 'final_deaths_bedwars', 'final_kills_bedwars', 'games_played_bedwars', 'games_played_bedwars_1', 'kills_bedwars', 'losses_bedwars', 'void_final_deaths_bedwars',  'wins_bedwars','fkdr','wlr','bblr','fk_lev','bb_lev','kill_lev']
-    scaled = pd.DataFrame([data], columns=columns)
-    scaled = scaler.transform(scaled)
+    def_columns = ['karma', 'networkExp', 'bedwars_beds', 'bedwars_bedwars_challenger',
+        'bedwars_bedwars_killer', 'bedwars_collectors_edition', 'bedwars_level',
+        'bedwars_loot_box', 'bedwars_slumber_ticket_master', 'bedwars_wins',
+        'challenges', 'all_timeBEDWARS__defensive', 'BEDWARS__offensive',
+        'BEDWARS__support', 'Bedwars_openedChests', 'Experience',
+        '_items_purchased_bedwars', 'beds_broken_bedwars', 'beds_lost_bedwars',
+        'coins', 'deaths_bedwars', 'diamond_resources_collected_bedwars',
+        'emerald_resources_collected_bedwars', 'fall_deaths_bedwars',
+        'fall_final_deaths_bedwars', 'fall_final_kills_bedwars',
+        'fall_kills_bedwars', 'final_deaths_bedwars', 'final_kills_bedwars',
+        'games_played_bedwars', 'games_played_bedwars_1', 'kills_bedwars',
+        'losses_bedwars', 'void_deaths_bedwars', 'void_final_deaths_bedwars',
+        'void_final_kills_bedwars', 'void_kills_bedwars', 'wins_bedwars',
+        'fkdr', 'wlr', 'bblr', 'fk_lev', 'bb_lev', 'kill_lev']
+    use_column = ['karma', 
+        'bedwars_loot_box',
+        'all_timeBEDWARS__defensive', 'BEDWARS__offensive',
+        'BEDWARS__support', 'Bedwars_openedChests',
+        'beds_broken_bedwars', 'beds_lost_bedwars',
+        'deaths_bedwars', 'diamond_resources_collected_bedwars',
+        'emerald_resources_collected_bedwars', 'fall_deaths_bedwars',
+        'final_deaths_bedwars', 'final_kills_bedwars',
+        'games_played_bedwars', 'games_played_bedwars_1', 'kills_bedwars',
+        'losses_bedwars', 'void_deaths_bedwars', 'void_final_deaths_bedwars',
+        'void_final_kills_bedwars', 'void_kills_bedwars', 'wins_bedwars'
+        ]
+    
+    indices_to_remove = []
+    for i, col in enumerate(def_columns):
+        if not col in use_column:
+            indices_to_remove.append(i)
+    
+    filtered_data = [value for index, value in enumerate(data) if index not in indices_to_remove]
+    df = pd.DataFrame([filtered_data], columns=use_column)
+    # Cheatカラムを削除して、各レコードの合計を計算する
+    row_sums = df.sum(axis=1)
+
+    # 分母が0になる可能性がある行のインデックスを取得
+    zero_division_indices = row_sums[row_sums == 0].index
+
+    # 10,000をその行の合計値で割った値を計算して保持する
+    divisors = pd.Series(0, index=df.index)  # 全ての行を0で初期化
+    divisors[zero_division_indices] = 0  # 分母が0になる行のみ0に設定
+    divisors[~divisors.index.isin(zero_division_indices)] = 10000 / row_sums[~row_sums.index.isin(zero_division_indices)]
+    scaled = df.mul(divisors, axis=0)
 
     y_pred = model.predict_proba(scaled)
     # print(y_pred)
@@ -200,14 +247,14 @@ def checker(mcid, model, scaler):
     API_KEY = key[1]
     POLSU_KEY = key[2]
     data, ping, mode, shop, language, met = status(mcid, API_KEY, POLSU_KEY)
-    if data != None and len(data) == 23:
+    if data != None and len(data) == 44:
         cheater = judgment_cheater(data, model, scaler)
-        return [mcid, cheater, ping, mode, shop, language, met, data[1]]
+        return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round(data[40], 2)]
     elif ping != None and mode != None and shop != None and language != None and met != None:
-        return [mcid, None, ping, mode, shop, language, met, data[1]]
+        return [mcid, None, ping, mode, shop, language, met, data[6], data[38], data[40]]
     else:
         print("error")
-        return [mcid, None, None, None, None, None, None, None]
+        return [mcid, None, None, None, None, None, None, None, None, None]
 
 
 def resource_path(relative_path):
@@ -338,8 +385,8 @@ def antico():
                     "    color: white;"
                     "}"
                 )
-                self.table_widget.setColumnCount(10)
-                self.table_widget.setHorizontalHeaderLabels(["STAR", "MCID", "G%", "PING", "LG", "1", "2", "3", "QB", "MET"])  # カラムのヘッダー
+                self.table_widget.setColumnCount(12)
+                self.table_widget.setHorizontalHeaderLabels(["STAR", "MCID", "G%", "PING", "LG", "1", "2", "3", "QB", "MET", "FKDR", "FR/BR"])  # カラムのヘッダー
                 list_num = 16
                 self.table_widget.setRowCount(list_num)  # 16行に変更
                 self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)
@@ -355,6 +402,8 @@ def antico():
                 self.table_widget.setColumnWidth(7, screen.width()//27)
                 self.table_widget.setColumnWidth(8, screen.width()//27)
                 self.table_widget.setColumnWidth(9, screen.width()//27)
+                self.table_widget.setColumnWidth(10, screen.width()//27)
+                self.table_widget.setColumnWidth(11, screen.width()//27)
 
                 # 以下、追加した行のデータを設定
                 for i in range(list_num):
@@ -607,7 +656,7 @@ def antico():
                     with open(resource_path('table.json')) as r:
                         li = json.load(r)
                         for l in li:
-                            if l[0] in players and time.time() - l[8] <= 60:
+                            if l[0] in players and time.time() - l[10] <= 60:
                                 players.remove(l[0])
                                 values.append(l)
                     self.table_widget.clearContents()
@@ -624,12 +673,9 @@ def antico():
                             save_list.append(value)
                         json.dump(save_list, w2, indent=4)
                     def sort_key(item):
-                        print(item[7])
                         if item is None or item[7] is None:
-                            print("inf")
                             return -float('inf')  # None や整数以外の要素を降順にするため、inf を返す
                         elif not isinstance(item[7], int):
-                            print("ing")
                             return -float('inf')  # None や整数以外の要素を降順にするため、inf を返す
                         return -item[7]  # 整数の場合は、そのままの値を返す
 
@@ -696,6 +742,9 @@ def antico():
                             updated_values[5] = language_list2[language_list.index(updated_values[5])]
                         else:
                             updated_values[5] = "oth"
+                        
+                        if updated_values[9] == 0:
+                            updated_values[9] = 1
                         if updated_values != None and updated_values[1] != None:
                             # テーブルのセルに更新した値を設定
                             if updated_values[3] != None:
@@ -804,6 +853,26 @@ def antico():
                             item9.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item9.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
                             self.table_widget.setItem(num, 9, item9)
+
+                            item10 = QTableWidgetItem(str(updated_values[8]))
+                            item10.setForeground(QColor(255, 255, 255))
+                            font = item10.font()  # フォントを取得
+                            font.setBold(True)  # フォントを太くする
+                            font.setPointSize(font_size)
+                            item10.setFont(font)  # 変更したフォントをセット
+                            item10.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
+                            item10.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
+                            self.table_widget.setItem(num, 10, item10)
+
+                            item11 = QTableWidgetItem(str(round(updated_values[8] / updated_values[9], 2)))
+                            item11.setForeground(QColor(255, 255, 255))
+                            font = item11.font()  # フォントを取得
+                            font.setBold(True)  # フォントを太くする
+                            font.setPointSize(font_size)
+                            item11.setFont(font)  # 変更したフォントをセット
+                            item11.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
+                            item11.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
+                            self.table_widget.setItem(num, 11, item11)
                         else:
                             item = QTableWidgetItem("???")
                             item.setForeground(QColor(255, 255, 255))
@@ -882,6 +951,24 @@ def antico():
                             item9.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item9.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
                             self.table_widget.setItem(num, 9, item9)
+                            item10 = QTableWidgetItem("???")
+                            item10.setForeground(QColor(255, 0, 0))
+                            font = item10.font()  # フォントを取得
+                            font.setBold(True)  # フォントを太くする
+                            font.setPointSize(font_size)
+                            item10.setFont(font)  # 変更したフォントをセット
+                            item10.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
+                            item10.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
+                            self.table_widget.setItem(num, 10, item10)
+                            item11 = QTableWidgetItem("???")
+                            item11.setForeground(QColor(255, 0, 0))
+                            font = item11.font()  # フォントを取得
+                            font.setBold(True)  # フォントを太くする
+                            font.setPointSize(font_size)
+                            item11.setFont(font)  # 変更したフォントをセット
+                            item11.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
+                            item11.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
+                            self.table_widget.setItem(num, 11, item11)
                         QApplication.processEvents()
                     self.pressed = False
                     self.check = False
