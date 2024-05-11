@@ -256,7 +256,6 @@ def checker(mcid, model, scaler):
         print("error")
         return [mcid, None, None, None, None, None, None, None, None, None]
 
-
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
