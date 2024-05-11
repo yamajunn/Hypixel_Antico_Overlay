@@ -205,7 +205,7 @@ def judgment_cheater(data, model, scaler):
         'losses_bedwars', 'void_deaths_bedwars', 'void_final_deaths_bedwars',
         'void_final_kills_bedwars', 'void_kills_bedwars', 'wins_bedwars',
         'fkdr', 'wlr', 'bblr', 'fk_lev', 'bb_lev', 'kill_lev']
-    use_column = ['karma', 
+    use_column = ['karma', 'bedwars_level',
         'bedwars_loot_box',
         'all_timeBEDWARS__defensive', 'BEDWARS__offensive',
         'BEDWARS__support', 'Bedwars_openedChests',
@@ -234,6 +234,7 @@ def judgment_cheater(data, model, scaler):
     # 10,000をその行の合計値で割った値を計算して保持する
     divisors = pd.Series(0, index=df.index)  # 全ての行を0で初期化
     divisors[zero_division_indices] = 0  # 分母が0になる行のみ0に設定
+    divisors = divisors.astype('float64')
     divisors[~divisors.index.isin(zero_division_indices)] = 10000 / row_sums[~row_sums.index.isin(zero_division_indices)]
     scaled = df.mul(divisors, axis=0)
 
@@ -249,11 +250,10 @@ def checker(mcid, model, scaler):
     data, ping, mode, shop, language, met = status(mcid, API_KEY, POLSU_KEY)
     if data != None and len(data) == 44:
         cheater = judgment_cheater(data, model, scaler)
-        return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round(data[40], 2)]
-    elif ping != None and mode != None and shop != None and language != None and met != None:
-        return [mcid, None, ping, mode, shop, language, met, data[6], data[38], data[40]]
+        return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round((data[28]+data[31])/data[29], 2)]
+    elif ping != None and met != None:
+        return [mcid, None, ping, None, None, None, met, None, None, None]
     else:
-        print("error")
         return [mcid, None, None, None, None, None, None, None, None, None]
 
 def resource_path(relative_path):
@@ -262,7 +262,7 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 
 # path = r"/Users/chinq500/Library/Application Support/minecraft/versions/1.8.9/logs/latest.log"
-path = r"C:/Users/Owner/AppData/Roaming/.minecraft/logs/blclient/minecraft/latest.log"
+# path = r"C:/Users/Owner/AppData/Roaming/.minecraft/logs/blclient/minecraft/latest.log"
 with open(resource_path('met_player.json'), 'w') as f:
     json.dump({}, f, indent=4)
 
@@ -385,7 +385,7 @@ def antico():
                     "}"
                 )
                 self.table_widget.setColumnCount(12)
-                self.table_widget.setHorizontalHeaderLabels(["STAR", "MCID", "G%", "PING", "LG", "1", "2", "3", "QB", "MET", "FKDR", "FR/BR"])  # カラムのヘッダー
+                self.table_widget.setHorizontalHeaderLabels(["STAR", "MCID", "G%", "PING", "LG", "1", "2", "3", "QB", "MET", "FKDR", "KILL AVG"])  # カラムのヘッダー
                 list_num = 16
                 self.table_widget.setRowCount(list_num)  # 16行に変更
                 self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)
@@ -734,7 +734,15 @@ def antico():
                         else:
                             qb_color = QColor(255, 255, 255)
                             back_qb = QColor(50, 50, 50, 150)
-
+                        if updated_values[8] is None or updated_values[8] == "???" or updated_values[8] > 7:
+                            fkdr_color = QColor(255, 0, 0)
+                            back_fkdr = QColor(50, 0, 0, 150)
+                        elif updated_values[8] > 3:
+                            fkdr_color = QColor(255, 165, 0)
+                            back_fkdr = QColor(50, 20, 0, 150)
+                        else:
+                            fkdr_color = QColor(255, 255, 255)
+                            back_fkdr = QColor(50, 50, 50, 150)
                         language_list = ["ENGLISH", "JAPANESE", "None"]
                         language_list2 = ["ENG", "JP", "none"]
                         if updated_values[5] in language_list:
@@ -742,8 +750,6 @@ def antico():
                         else:
                             updated_values[5] = "oth"
                         
-                        if updated_values[9] == 0:
-                            updated_values[9] = 1
                         if updated_values != None and updated_values[1] != None:
                             # テーブルのセルに更新した値を設定
                             if updated_values[3] != None:
@@ -854,16 +860,16 @@ def antico():
                             self.table_widget.setItem(num, 9, item9)
 
                             item10 = QTableWidgetItem(str(updated_values[8]))
-                            item10.setForeground(QColor(255, 255, 255))
+                            item10.setForeground(fkdr_color)
                             font = item10.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
                             font.setPointSize(font_size)
                             item10.setFont(font)  # 変更したフォントをセット
                             item10.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
-                            item10.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
+                            item10.setBackground(back_fkdr)  # 背景色を設定
                             self.table_widget.setItem(num, 10, item10)
 
-                            item11 = QTableWidgetItem(str(round(updated_values[8] / updated_values[9], 2)))
+                            item11 = QTableWidgetItem(str(updated_values[9]))
                             item11.setForeground(QColor(255, 255, 255))
                             font = item11.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
@@ -951,13 +957,13 @@ def antico():
                             item9.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
                             self.table_widget.setItem(num, 9, item9)
                             item10 = QTableWidgetItem("???")
-                            item10.setForeground(QColor(255, 0, 0))
+                            item10.setForeground(fkdr_color)
                             font = item10.font()  # フォントを取得
                             font.setBold(True)  # フォントを太くする
                             font.setPointSize(font_size)
                             item10.setFont(font)  # 変更したフォントをセット
                             item10.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
-                            item10.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
+                            item10.setBackground(back_fkdr)  # 背景色を設定
                             self.table_widget.setItem(num, 10, item10)
                             item11 = QTableWidgetItem("???")
                             item11.setForeground(QColor(255, 0, 0))
