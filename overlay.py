@@ -77,50 +77,49 @@ def getinfo(call):
         print(f"An error occurred: {e}")
         return None
 
-def get_shop(data_dic):
-    if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and "stats" in data_dic["player"] and "Bedwars" in data_dic["player"]["stats"] and "favourites_2" in data_dic["player"]["stats"]["Bedwars"]:
-        return len(set(data_dic["player"]["stats"]["Bedwars"]["favourites_2"].split(",")) & set(["golden_apple", "fireball", "diamond_boots"]))
-def get_language(data_dic):
-    if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and "userLanguage" in data_dic["player"]:
-        return data_dic["player"]["userLanguage"]
 def get_status(uuid, API_KEY):
     uuid_link = f"https://api.hypixel.net/player?key={API_KEY}&uuid={uuid}"
     data_dic = getinfo(uuid_link)
     # pprint.pprint(data_dic)
     datas = []
-    if data_dic != None:
-        if "cause" in data_dic and data_dic["cause"] == "Key throttle":
-            time.sleep(5)
-        if "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None:
-            for dic_label in dic_labels:
-                if dic_label in data_dic["player"]:
-                    datas.append(data_dic["player"][dic_label])
-                else:
-                    datas.append(0)
-            for achievement in achievements:
-                if 'achievements' in data_dic["player"] and achievement in data_dic["player"]['achievements']:
-                    datas.append(data_dic["player"]['achievements'][achievement])
-                else:
-                    datas.append(0)
-            for challenge in challenges:
-                if 'challenges' in data_dic["player"] and 'all_time' in data_dic["player"]['challenges'] and challenge in data_dic["player"]['challenges']['all_time']:
-                    datas.append(data_dic["player"]['challenges']['all_time'][challenge])
-                else:
-                    datas.append(0)
-            for stats in statuses:
-                if 'stats' in data_dic["player"] and 'Bedwars' in data_dic["player"]['stats'] and stats in data_dic["player"]['stats']['Bedwars']:
-                    datas.append(data_dic["player"]['stats']['Bedwars'][stats])
-                else:
-                    datas.append(0)
-            for a in range(len(datas)):
-                if a in [27,32,18,6]:
-                # if a in [9, 14, 4, 1]:
-                    if datas[a] == 0:
-                        datas[a] = 1
-            for j in [datas[28] / datas[27], datas[37] / datas[32], datas[17] / datas[18], datas[28] / datas[6], datas[31] / datas[6], datas[17] / datas[6]]:
-            # for j in [datas[10] / datas[9], datas[16] / datas[14], datas[3] / datas[4], datas[10] / datas[1], datas[13] / datas[1], datas[3] / datas[1]]:
-                datas.append(j)
-        return [datas, get_shop(data_dic), get_language(data_dic)]
+    if data_dic != None and "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and not "cause" in data_dic and data_dic["cause"] == "Key throttle":
+        for dic_label in dic_labels:
+            if dic_label in data_dic["player"]:
+                datas.append(data_dic["player"][dic_label])
+            else:
+                datas.append(0)
+        for achievement in achievements:
+            if 'achievements' in data_dic["player"] and achievement in data_dic["player"]['achievements']:
+                datas.append(data_dic["player"]['achievements'][achievement])
+            else:
+                datas.append(0)
+        for challenge in challenges:
+            if 'challenges' in data_dic["player"] and 'all_time' in data_dic["player"]['challenges'] and challenge in data_dic["player"]['challenges']['all_time']:
+                datas.append(data_dic["player"]['challenges']['all_time'][challenge])
+            else:
+                datas.append(0)
+        for stats in statuses:
+            if 'stats' in data_dic["player"] and 'Bedwars' in data_dic["player"]['stats'] and stats in data_dic["player"]['stats']['Bedwars']:
+                datas.append(data_dic["player"]['stats']['Bedwars'][stats])
+            else:
+                datas.append(0)
+        for a in range(len(datas)):
+            if a in [27,32,18,6]:
+            # if a in [9, 14, 4, 1]:
+                if datas[a] == 0:
+                    datas[a] = 1
+        for j in [datas[28] / datas[27], datas[37] / datas[32], datas[17] / datas[18], datas[28] / datas[6], datas[31] / datas[6], datas[17] / datas[6]]:
+        # for j in [datas[10] / datas[9], datas[16] / datas[14], datas[3] / datas[4], datas[10] / datas[1], datas[13] / datas[1], datas[3] / datas[1]]:
+            datas.append(j)
+        if "stats" in data_dic["player"] and "Bedwars" in data_dic["player"]["stats"] and "favourites_2" in data_dic["player"]["stats"]["Bedwars"]:
+            shop = len(set(data_dic["player"]["stats"]["Bedwars"]["favourites_2"].split(",")) & set(["golden_apple", "fireball", "diamond_boots"]))
+        else:
+            shop = None
+        if "userLanguage" in data_dic["player"]:
+            language =  data_dic["player"]["userLanguage"]
+        else:
+            language = None
+        return [datas, shop, language]
     else:
         return [None, None, None]
     
@@ -166,7 +165,6 @@ def pols(uuid, POLSU_KEY):
     url = "https://api.polsu.xyz/polsu/ping"
     querystring = {"uuid":f"{uuid}"}
     headers = {"Api-Key": POLSU_KEY}
-
     try:
         response = requests.get(url, headers=headers, params=querystring)
         response.raise_for_status()  # HTTP エラーがあれば例外を発生させる
@@ -185,7 +183,7 @@ def status(name, API_KEY, POLSU_KEY):
     info = getinfo(name_link)
     if info != None and "id" in info:
         uuid = info["id"]
-        return_status = get_status(uuid, API_KEY)
+        return_status = get_status(info["id"], API_KEY)
         return [return_status[0], pols(uuid, POLSU_KEY), games(uuid, API_KEY), return_status[1], return_status[2], uuid]
     else:
         return [None, None, None, None, None, None]
@@ -242,19 +240,10 @@ def judgment_cheater(data, model, scaler):
     # print(y_pred)
     return y_pred[0][0]
 
-def checker(mcid, model, scaler):
-    with open('key.json') as k:
-        key = json.load(k)
-    API_KEY = key[1]
-    POLSU_KEY = key[2]
+def checker(mcid, model, scaler, API_KEY, POLSU_KEY):
     data, ping, mode, shop, language, met = status(mcid, API_KEY, POLSU_KEY)
-    if data != None and len(data) == 44:
-        cheater = judgment_cheater(data, model, scaler)
-        return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round((data[28]+data[31])/data[29], 2)]
-    elif ping != None and met != None:
-        return [mcid, None, ping, None, None, None, met, None, None, None]
-    else:
-        return [mcid, None, None, None, None, None, None, None, None, None]
+    cheater = judgment_cheater(data, model, scaler)
+    return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round((data[28]+data[31])/data[29], 2)]
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -645,7 +634,7 @@ def antico():
                 with open(resource_path('table.json'), 'w') as w3:
                     json.dump([], w3)
 
-            def updater(self):
+            async def updater(self):
                 if self.check:
                     players = self.players
                     values = []
@@ -661,8 +650,12 @@ def antico():
                     self.table_widget.clearContents()
                     self.show()
                     # print(players)
+                    with open('key.json') as k:
+                        key = json.load(k)
+                    API_KEY = key[1]
+                    POLSU_KEY = key[2]
                     with concurrent.futures.ThreadPoolExecutor() as executor:
-                        return_value = list(executor.map(lambda mcid: checker(mcid, model, scaler), players))
+                        return_value = list(executor.map(lambda mcid: checker(mcid, model, scaler, API_KEY, POLSU_KEY), players))
                         values += return_value
                     with open(resource_path('table.json'), 'wt') as w2:
                         now = time.time()
