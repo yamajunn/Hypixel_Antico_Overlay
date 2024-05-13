@@ -250,7 +250,10 @@ def checker(mcid, model, scaler):
     data, ping, mode, shop, language, met = status(mcid, API_KEY, POLSU_KEY)
     if data != None and len(data) == 44:
         cheater = judgment_cheater(data, model, scaler)
-        return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round((data[28]+data[31])/data[29], 2)]
+        playd_game = data[29]
+        if data[29] == 0:
+            playd_game = 1
+        return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round((data[28]+data[31])/playd_game, 2)]
     elif ping != None and met != None:
         return [mcid, None, ping, None, None, None, met, None, None, None]
     else:
