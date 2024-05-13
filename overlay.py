@@ -82,7 +82,7 @@ def get_status(uuid, API_KEY):
     data_dic = getinfo(uuid_link)
     # pprint.pprint(data_dic)
     datas = []
-    if data_dic != None and "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None and not "cause" in data_dic and data_dic["cause"] == "Key throttle":
+    if (data_dic != None and "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None) or not ("cause" in data_dic and data_dic["cause"] == "Key throttle"):
         for dic_label in dic_labels:
             if dic_label in data_dic["player"]:
                 datas.append(data_dic["player"][dic_label])
@@ -189,6 +189,8 @@ def status(name, API_KEY, POLSU_KEY):
         return [None, None, None, None, None, None]
 
 def judgment_cheater(data, model, scaler):
+    if data is None:
+        return None
     def_columns = ['karma', 'networkExp', 'bedwars_beds', 'bedwars_bedwars_challenger',
         'bedwars_bedwars_killer', 'bedwars_collectors_edition', 'bedwars_level',
         'bedwars_loot_box', 'bedwars_slumber_ticket_master', 'bedwars_wins',
@@ -243,7 +245,10 @@ def judgment_cheater(data, model, scaler):
 def checker(mcid, model, scaler, API_KEY, POLSU_KEY):
     data, ping, mode, shop, language, met = status(mcid, API_KEY, POLSU_KEY)
     cheater = judgment_cheater(data, model, scaler)
-    return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round((data[28]+data[31])/data[29], 2)]
+    if not data is None:
+        return [mcid, cheater, ping, mode, shop, language, met, data[6], round(data[38], 2), round((data[28]+data[31])/data[29], 2)]
+    else:
+        return [mcid, cheater, ping, mode, shop, language, met, None, None, None]
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -634,7 +639,7 @@ def antico():
                 with open(resource_path('table.json'), 'w') as w3:
                     json.dump([], w3)
 
-            async def updater(self):
+            def updater(self):
                 if self.check:
                     players = self.players
                     values = []
