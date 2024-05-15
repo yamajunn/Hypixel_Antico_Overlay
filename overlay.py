@@ -82,7 +82,7 @@ def get_status(uuid, API_KEY):
     data_dic = getinfo(uuid_link)
     # pprint.pprint(data_dic)
     datas = []
-    if (data_dic != None and "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] != None) or not ("cause" in data_dic and data_dic["cause"] == "Key throttle"):
+    if (data_dic != None and "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] is not None) or not ("cause" in data_dic and data_dic["cause"] == "Key throttle"):
         for dic_label in dic_labels:
             if dic_label in data_dic["player"]:
                 datas.append(data_dic["player"][dic_label])
@@ -275,7 +275,7 @@ def auto_who(s):
     l = s.split("\n")
     who_list = []
     for item in l:
-        if " が参加しました (" in item:
+        if (" が参加しました (" in item and "/" in item and ")！" in item) or (" has joined (" in item and "/" in item and ")!" in item):
             for i, string in enumerate(list(item[40:])):
                 if string == " ":
                     who_list.append(item[40:40+i])
@@ -652,8 +652,6 @@ def antico():
                             if l[0] in players and time.time() - l[10] <= 60:
                                 players.remove(l[0])
                                 values.append(l)
-                    self.table_widget.clearContents()
-                    self.show()
                     # print(players)
                     with open('key.json') as k:
                         key = json.load(k)
@@ -661,7 +659,7 @@ def antico():
                     POLSU_KEY = key[2]
                     with concurrent.futures.ThreadPoolExecutor() as executor:
                         return_value = list(executor.map(lambda mcid: checker(mcid, model, scaler, API_KEY, POLSU_KEY), players))
-                        values += return_value
+                    values += return_value
                     with open(resource_path('table.json'), 'wt') as w2:
                         now = time.time()
                         save_list = []
@@ -677,9 +675,11 @@ def antico():
                         return -item[7]  # 整数の場合は、そのままの値を返す
 
                     values.sort(key=sort_key)
-
+                    row_count = sum(1 for row in range(self.table_widget.rowCount()) if self.table_widget.item(row, 0) is not None)
+                    # print(self.table_widget.item(0, 0))
                     for num, updated_values in enumerate(values):
-                        print(updated_values)
+                        print(self.table_widget.item(num, 0))
+                        row = row_count + num
                         met_num = 0
                         with open(resource_path('met_player.json')) as r:
                             di = json.load(r)
@@ -778,7 +778,7 @@ def antico():
                             item.setFont(font)  # 変更したフォントをセット
                             item.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 0, item)
+                            self.table_widget.setItem(row, 0, item)
 
                             item1 = QTableWidgetItem(str(updated_values[0]))
                             item1.setForeground(QColor(255, 255, 255))
@@ -787,7 +787,7 @@ def antico():
                             font.setPointSize(font_size)
                             item1.setFont(font)  # 変更したフォントをセット
                             item1.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 1, item1)
+                            self.table_widget.setItem(row, 1, item1)
 
                             item2 = QTableWidgetItem(f"{int(updated_values[1]*100)}%")
                             item2.setForeground(g_color)
@@ -797,7 +797,7 @@ def antico():
                             item2.setFont(font)  # 変更したフォントをセット
                             item2.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item2.setBackground(back_g)  # 背景色を設定
-                            self.table_widget.setItem(num, 2, item2)
+                            self.table_widget.setItem(row, 2, item2)
 
                             item3 = QTableWidgetItem(str(updated_values[2]))
                             item3.setForeground(ping_color)
@@ -807,7 +807,7 @@ def antico():
                             item3.setFont(font)  # 変更したフォントをセット
                             item3.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item3.setBackground(back_ping)  # 背景色を設定
-                            self.table_widget.setItem(num, 3, item3)
+                            self.table_widget.setItem(row, 3, item3)
 
                             item4 = QTableWidgetItem(str(updated_values[5]))
                             item4.setForeground(QColor(255, 255, 255))
@@ -817,25 +817,25 @@ def antico():
                             item4.setFont(font)  # 変更したフォントをセット
                             item4.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item4.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 4, item4)
+                            self.table_widget.setItem(row, 4, item4)
 
                             label5 = QLabel()
                             label5.setAlignment(Qt.AlignCenter)
                             label5.setPixmap(pixmap0)
                             label5.setStyleSheet("background-color: rgba(50, 50, 50, 150);")
-                            self.table_widget.setCellWidget(num, 5, label5)
+                            self.table_widget.setCellWidget(row, 5, label5)
                             
                             label6 = QLabel()
                             label6.setAlignment(Qt.AlignCenter)
                             label6.setPixmap(pixmap1)
                             label6.setStyleSheet("background-color: rgba(50, 50, 50, 150);")
-                            self.table_widget.setCellWidget(num, 6, label6)
+                            self.table_widget.setCellWidget(row, 6, label6)
 
                             label7 = QLabel()
                             label7.setAlignment(Qt.AlignCenter)
                             label7.setPixmap(pixmap2)
                             label7.setStyleSheet("background-color: rgba(50, 50, 50, 150);")
-                            self.table_widget.setCellWidget(num, 7, label7)
+                            self.table_widget.setCellWidget(row, 7, label7)
 
                             item8 = QTableWidgetItem(str(updated_values[4]))
                             item8.setForeground(qb_color)
@@ -845,7 +845,7 @@ def antico():
                             item8.setFont(font)  # 変更したフォントをセット
                             item8.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item8.setBackground(back_qb)  # 背景色を設定
-                            self.table_widget.setItem(num, 8, item8)
+                            self.table_widget.setItem(row, 8, item8)
 
                             item9 = QTableWidgetItem(str(met_num))
                             item9.setForeground(QColor(255, 255, 255))
@@ -855,7 +855,7 @@ def antico():
                             item9.setFont(font)  # 変更したフォントをセット
                             item9.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item9.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 9, item9)
+                            self.table_widget.setItem(row, 9, item9)
 
                             item10 = QTableWidgetItem(str(updated_values[8]))
                             item10.setForeground(fkdr_color)
@@ -865,7 +865,7 @@ def antico():
                             item10.setFont(font)  # 変更したフォントをセット
                             item10.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item10.setBackground(back_fkdr)  # 背景色を設定
-                            self.table_widget.setItem(num, 10, item10)
+                            self.table_widget.setItem(row, 10, item10)
 
                             item11 = QTableWidgetItem(str(updated_values[9]))
                             item11.setForeground(QColor(255, 255, 255))
@@ -875,7 +875,7 @@ def antico():
                             item11.setFont(font)  # 変更したフォントをセット
                             item11.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item11.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 11, item11)
+                            self.table_widget.setItem(row, 11, item11)
                         else:
                             item = QTableWidgetItem("???")
                             item.setForeground(QColor(255, 255, 255))
@@ -885,7 +885,7 @@ def antico():
                             item.setFont(font)  # 変更したフォントをセット
                             item.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 0, item)
+                            self.table_widget.setItem(row, 0, item)
                             item1 = QTableWidgetItem(str(updated_values[0]))
                             item1.setForeground(g_color)
                             font = item1.font()  # フォントを取得
@@ -893,7 +893,7 @@ def antico():
                             font.setPointSize(font_size)
                             item1.setFont(font)  # 変更したフォントをセット
                             item1.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 1, item1)
+                            self.table_widget.setItem(row, 1, item1)
                             item2 = QTableWidgetItem("???")
                             item2.setForeground(g_color)
                             font = item2.font()  # フォントを取得
@@ -902,7 +902,7 @@ def antico():
                             item2.setFont(font)  # 変更したフォントをセット
                             item2.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item2.setBackground(back_g)  # 背景色を設定
-                            self.table_widget.setItem(num, 2, item2)
+                            self.table_widget.setItem(row, 2, item2)
                             item3 = QTableWidgetItem("???")
                             item3.setForeground(ping_color)
                             font = item3.font()  # フォントを取得
@@ -911,7 +911,7 @@ def antico():
                             item3.setFont(font)  # 変更したフォントをセット
                             item3.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item3.setBackground(back_ping)  # 背景色を設定
-                            self.table_widget.setItem(num, 3, item3)
+                            self.table_widget.setItem(row, 3, item3)
                             item4 = QTableWidgetItem("???")
                             item4.setForeground(QColor(255, 0, 0))
                             font = item4.font()  # フォントを取得
@@ -920,22 +920,22 @@ def antico():
                             item4.setFont(font)  # 変更したフォントをセット
                             item4.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item4.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 4, item4)
+                            self.table_widget.setItem(row, 4, item4)
                             label5 = QLabel()
                             label5.setAlignment(Qt.AlignCenter)
                             label5.setPixmap(pixmap0)
                             label5.setStyleSheet("background-color: rgba(50, 50, 50, 150);")
-                            self.table_widget.setCellWidget(num, 5, label5)
+                            self.table_widget.setCellWidget(row, 5, label5)
                             label6 = QLabel()
                             label6.setAlignment(Qt.AlignCenter)
                             label6.setPixmap(pixmap1)
                             label6.setStyleSheet("background-color: rgba(50, 50, 50, 150);")
-                            self.table_widget.setCellWidget(num, 6, label6)
+                            self.table_widget.setCellWidget(row, 6, label6)
                             label7 = QLabel()
                             label7.setAlignment(Qt.AlignCenter)
                             label7.setPixmap(pixmap2)
                             label7.setStyleSheet("background-color: rgba(50, 50, 50, 150);")
-                            self.table_widget.setCellWidget(num, 7, label7)
+                            self.table_widget.setCellWidget(row, 7, label7)
                             item8 = QTableWidgetItem("???")
                             item8.setForeground(qb_color)
                             font = item8.font()  # フォントを取得
@@ -944,7 +944,7 @@ def antico():
                             item8.setFont(font)  # 変更したフォントをセット
                             item8.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item8.setBackground(back_qb)  # 背景色を設定
-                            self.table_widget.setItem(num, 8, item8)
+                            self.table_widget.setItem(row, 8, item8)
                             item9 = QTableWidgetItem(str(met_num))
                             item9.setForeground(QColor(255, 255, 255))
                             font = item9.font()  # フォントを取得
@@ -953,7 +953,7 @@ def antico():
                             item9.setFont(font)  # 変更したフォントをセット
                             item9.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item9.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 9, item9)
+                            self.table_widget.setItem(row, 9, item9)
                             item10 = QTableWidgetItem("???")
                             item10.setForeground(fkdr_color)
                             font = item10.font()  # フォントを取得
@@ -962,7 +962,7 @@ def antico():
                             item10.setFont(font)  # 変更したフォントをセット
                             item10.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item10.setBackground(back_fkdr)  # 背景色を設定
-                            self.table_widget.setItem(num, 10, item10)
+                            self.table_widget.setItem(row, 10, item10)
                             item11 = QTableWidgetItem("???")
                             item11.setForeground(QColor(255, 0, 0))
                             font = item11.font()  # フォントを取得
@@ -971,7 +971,7 @@ def antico():
                             item11.setFont(font)  # 変更したフォントをセット
                             item11.setTextAlignment(Qt.AlignCenter)  # テキストを中央に配置
                             item11.setBackground(QColor(50, 50, 50, 150))  # 背景色を設定
-                            self.table_widget.setItem(num, 11, item11)
+                            self.table_widget.setItem(row, 11, item11)
                         QApplication.processEvents()
                     self.pressed = False
                     self.check = False
@@ -979,7 +979,12 @@ def antico():
             def who_checker(self):
                 s = f.read()
                 # print(s)
-                players = who(s)
+                who_players = who(s)
+                if who_players != []:
+                    self.table_widget.clearContents()
+                    self.show()
+                auto_players = auto_who(s)
+                players = list(set(auto_players+who_players))
                 if players != [] and len(players) <= 16:
                     self.pressed = True
                     self.players = players
