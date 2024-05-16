@@ -82,7 +82,7 @@ def get_status(uuid, API_KEY):
     data_dic = getinfo(uuid_link)
     # pprint.pprint(data_dic)
     datas = []
-    if (data_dic != None and "success" in data_dic and data_dic["success"] == True and "player" in data_dic and data_dic["player"] is not None) or not ("cause" in data_dic and data_dic["cause"] == "Key throttle"):
+    if data_dic is not None and (("success" in data_dic and data_dic["success"] is True and "player" in data_dic and data_dic["player"] is not None) and not ("cause" in data_dic and data_dic["cause"] == "Key throttle")):
         for dic_label in dic_labels:
             if dic_label in data_dic["player"]:
                 datas.append(data_dic["player"][dic_label])
@@ -675,10 +675,10 @@ def antico():
                         return -item[7]  # 整数の場合は、そのままの値を返す
 
                     values.sort(key=sort_key)
-                    row_count = sum(1 for row in range(self.table_widget.rowCount()) if self.table_widget.item(row, 0) is not None)
-                    # print(self.table_widget.item(0, 0))
+                    row_count = sum(1 for row in range(self.table_widget.rowCount()) if self.table_widget.item(row, 1) is not None)
+                    print(row_count)
                     for num, updated_values in enumerate(values):
-                        print(self.table_widget.item(num, 0))
+                        print(updated_values)
                         row = row_count + num
                         met_num = 0
                         with open(resource_path('met_player.json')) as r:
@@ -975,6 +975,7 @@ def antico():
                         QApplication.processEvents()
                     self.pressed = False
                     self.check = False
+                    self.table_widget.sortItems(0)
             
             def who_checker(self):
                 s = f.read()
@@ -986,6 +987,7 @@ def antico():
                 auto_players = auto_who(s)
                 players = list(set(auto_players+who_players))
                 if players != [] and len(players) <= 16:
+                    print(players)
                     self.pressed = True
                     self.players = players
                     self.check = True
