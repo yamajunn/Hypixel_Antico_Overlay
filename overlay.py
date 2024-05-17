@@ -104,7 +104,7 @@ def get_status(uuid, API_KEY):
             else:
                 datas.append(0)
         for a in range(len(datas)):
-            if a in [27,32,18,6]:
+            if a in [27, 32, 18, 6]:
             # if a in [9, 14, 4, 1]:
                 if datas[a] == 0:
                     datas[a] = 1
