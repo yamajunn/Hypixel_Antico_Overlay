@@ -269,6 +269,7 @@ def who(s):
     for item in l:
         if item[40:47] == "ONLINE:":
             who_list = item[48:].split(", ")
+    # print(f"who: {who_list}")
     return who_list
 
 def auto_who(s):
@@ -280,9 +281,10 @@ def auto_who(s):
                 if string == " ":
                     who_list.append(item[40:40+i])
                     break
+    # print(f"auto who: {who_list}")
     return who_list
 
-def exit_player(s):
+def exit_who(s):
     l = s.split("\n")
     who_list = []
     for item in l:
@@ -291,6 +293,7 @@ def exit_player(s):
                 if string == " ":
                     who_list.append(item[40:40+i])
                     break
+    # print(f"exit: {who_list}")
     return who_list
 
 class ImageTableWidgetItem(QTableWidgetItem):
@@ -641,7 +644,7 @@ def antico():
 
             def updater(self):
                 if self.check:
-                    players = self.players
+                    players = self.players.copy()
                     values = []
                     model = joblib.load(resource_path('Cheater.pkl'))
                     scaler = joblib.load(resource_path('scaler.joblib'))
@@ -675,10 +678,13 @@ def antico():
                         return -item[7]  # 整数の場合は、そのままの値を返す
 
                     values.sort(key=sort_key)
-                    row_count = sum(1 for row in range(self.table_widget.rowCount()) if self.table_widget.item(row, 1) is not None)
-                    print(row_count)
+                    # row_count = sum(1 for row in range(self.table_widget.rowCount()) if self.table_widget.item(row, 1) is not None)
+                    # print(row_count)
+                    row_count = 0
+                    self.table_widget.clearContents()
+                    self.show()
                     for num, updated_values in enumerate(values):
-                        print(updated_values)
+                        # print(updated_values)
                         row = row_count + num
                         met_num = 0
                         with open(resource_path('met_player.json')) as r:
@@ -975,21 +981,19 @@ def antico():
                         QApplication.processEvents()
                     self.pressed = False
                     self.check = False
-                    self.table_widget.sortItems(0)
             
             def who_checker(self):
                 s = f.read()
                 # print(s)
                 who_players = who(s)
                 if who_players != []:
-                    self.table_widget.clearContents()
-                    self.show()
+                    self.players = []
                 auto_players = auto_who(s)
-                players = list(set(auto_players+who_players))
-                if players != [] and len(players) <= 16:
-                    print(players)
+                exit_player = exit_who(s)
+                players = auto_players+who_players+exit_player
+                if who_players != [] or auto_players != [] or exit_player != []:
                     self.pressed = True
-                    self.players = players
+                    self.players = list(set(self.players + players) ^ set(exit_player))
                     self.check = True
 
         if __name__ == '__main__':
