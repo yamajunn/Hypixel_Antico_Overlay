@@ -315,14 +315,12 @@ class ImageTableWidgetItem(QTableWidgetItem):
 try:
     with open('key.json') as k:
         key = json.load(k)
-        print(key)
         key[6]
 except Exception:
     with open('key.json', 'w') as kk:
         json.dump(["f5", "838bf3d7-9d38-4d3d-a99f-a967ba52c208", "a5759d02-94e9-466a-8e40-6679b1ccb256", "C:/Users/Owner/AppData/Roaming/.minecraft/logs/blclient/minecraft/latest.log", 0, 0, 13], kk)
     with open('key.json') as k:
         key = json.load(k)
-        print(key)
 
 def antico():
     with open(key[3]) as f:
@@ -348,11 +346,12 @@ def antico():
             def ShowOrHide(self):
                 if not self.pressed:
                     if self.isHidden():
-                        print("show")
                         self.show()
                     else:
-                        print("hide")
                         self.hide()
+            
+            def minimize_window(self):
+                self.showMinimized()
 
             def initUI(self):
                 screen = QDesktopWidget().screenGeometry()
@@ -440,15 +439,21 @@ def antico():
                 # 閉じるボタン
                 self.closeButton = QPushButton('×', self)
                 self.closeButton.setGeometry(int(screen.width()//2.5)-200, 0, 40, 30)
-                self.closeButton.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); border: 2px solid rgba(200, 200, 200, 250); color: white;")
+                self.closeButton.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(200, 200, 200, 250); color: white;")
                 self.closeButton.clicked.connect(self.close)
+
+                # 閉じるボタン
+                self.closeButton = QPushButton('─', self)
+                self.closeButton.setGeometry(int(screen.width()//2.5)-240, 0, 40, 30)
+                self.closeButton.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(200, 200, 200, 250); color: white;")
+                self.closeButton.clicked.connect(self.minimize_window)
 
                 # フレームを作成して黒い枠を設定
                 frame = QFrame(self)
                 frame.setFrameStyle(QFrame.Box)
                 frame.setLineWidth(5)
-                frame.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); border: 2px solid rgba(200, 200, 200, 250);")
-                frame.setGeometry(0, 0, int(screen.width()//2.5)-200, 30)
+                frame.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(200, 200, 200, 250);")
+                frame.setGeometry(0, 0, int(screen.width()//2.5)-240, 30)
 
                 # 画像を表示するための QLabel を作成し、親を frame に設定
                 image_label = QLabel(frame)
@@ -472,7 +477,7 @@ def antico():
                 self.settings_button = QPushButton(self)
                 self.settings_button.setIcon(QIcon(resource_path("gear.png")))
                 self.settings_button.setIconSize(QSize(25, 25))
-                self.settings_button.setGeometry(int(screen.width()//2.5)-240, 5, 20, 20)
+                self.settings_button.setGeometry(int(screen.width()//2.5)-270, 5, 20, 20)
                 self.settings_button.clicked.connect(self.open_settings)
 
                 # レイアウトを設定
@@ -683,6 +688,7 @@ def antico():
                     row_count = 0
                     self.table_widget.clearContents()
                     self.show()
+                    self.showNormal()
                     for num, updated_values in enumerate(values):
                         # print(updated_values)
                         row = row_count + num
@@ -987,6 +993,7 @@ def antico():
                 # print(s)
                 who_players = who(s)
                 if who_players != []:
+                    self.pressed = True
                     self.players = []
                 auto_players = auto_who(s)
                 exit_player = exit_who(s)
