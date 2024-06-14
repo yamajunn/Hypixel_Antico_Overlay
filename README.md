@@ -22,3 +22,8 @@
 : FKDR,
 
 : Average number of kills per game,
+
+### 使用したフレームワーク
+・ PyQt5
+### 使用言語
+・ Python3
