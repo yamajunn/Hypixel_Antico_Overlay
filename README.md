@@ -23,7 +23,7 @@
 
 : Average number of kills per game,
 
-### 使用したフレームワーク
+### Frameworks used
 ・ PyQt5
-### 使用言語
+### Language
 ・ Python3
