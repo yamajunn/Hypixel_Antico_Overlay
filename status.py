@@ -174,7 +174,7 @@
 # name = "Gokiton"
 # print(status(name, API_KEY))
 
-# names = ["Gokiton", "Hakuryu_999", "vrukz", "DragonCrane87"]
+# names = []
 # print("[")
 # for i in names:
 #     print(f"{status(i, API_KEY)[0]},")
